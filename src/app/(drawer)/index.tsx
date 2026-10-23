@@ -31,6 +31,7 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import { composeRequest, type ComposedRequest } from '@/lib/chatSend';
 import { makeId } from '@/lib/id';
 import { generateLocal } from '@/lib/localInference';
+import { reconcileInstalledModels } from '@/lib/modelDownload';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { copyToAttachments, readTextFile, toOllamaImages, validateAttachment } from '@/lib/attachments';
@@ -61,7 +62,9 @@ export default function ChatScreen() {
   const latencyMs = useConnectionStore((state) => state.latencyMs);
   const testConnection = useConnectionStore((state) => state.test);
   const models = useConnectionStore((state) => state.models);
-  const localModelReady = useLocalModelStore((state) => state.status === 'ready');
+  const localModelReady = useLocalModelStore((state) =>
+    Boolean(state.activeModelId && state.installed[state.activeModelId])
+  );
 
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -93,6 +96,10 @@ export default function ChatScreen() {
   useEffect(() => {
     setInput('');
   }, [activeChat?.id]);
+
+  useEffect(() => {
+    void reconcileInstalledModels();
+  }, []);
 
   useEffect(() => {
     if (

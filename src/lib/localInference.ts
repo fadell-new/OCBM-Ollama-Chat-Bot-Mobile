@@ -1,27 +1,57 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { initLlama, type LlamaContext } from 'llama.rn';
 
+import { getModelById, type DeviceModel } from '@/lib/modelCatalog';
 import { useLocalModelStore } from '@/store/localModelStore';
 
 let context: LlamaContext | null = null;
 let currentModelPath: string | null = null;
 
-export async function isLocalModelReady(): Promise<boolean> {
+type ActiveEntry = {
+  model: DeviceModel;
+  path: string;
+};
+
+function getActiveEntry(): ActiveEntry | null {
   const state = useLocalModelStore.getState();
-  if (state.status !== 'ready' || !state.path) return false;
-  const info = await FileSystem.getInfoAsync(state.path);
+
+  if (state.activeModelId) {
+    const model = getModelById(state.activeModelId);
+    const record = state.installed[state.activeModelId];
+    if (model && record) {
+      return { model, path: record.path };
+    }
+  }
+
+  const firstId = Object.keys(state.installed)[0];
+  if (!firstId) return null;
+
+  const model = getModelById(firstId);
+  const record = state.installed[firstId];
+  if (!model || !record) return null;
+
+  return { model, path: record.path };
+}
+
+export function getActiveModel(): DeviceModel | null {
+  return getActiveEntry()?.model ?? null;
+}
+
+export async function isLocalModelReady(): Promise<boolean> {
+  const entry = getActiveEntry();
+  if (!entry) return false;
+  const info = await FileSystem.getInfoAsync(entry.path);
   return info.exists;
 }
 
 export async function loadLocalModel(): Promise<LlamaContext | null> {
-  const state = useLocalModelStore.getState();
-  if (state.status !== 'ready' || !state.path) return null;
+  const entry = getActiveEntry();
+  if (!entry) return null;
 
-  if (context && currentModelPath === state.path) {
+  if (context && currentModelPath === entry.path) {
     return context;
   }
 
-  // Unload previous
   if (context) {
     try {
       await context.release();
@@ -33,13 +63,13 @@ export async function loadLocalModel(): Promise<LlamaContext | null> {
   }
 
   try {
-    context = await initLlama({ model: state.path, n_ctx: 2048, n_threads: 4 });
-    currentModelPath = state.path;
+    context = await initLlama({ model: entry.path, n_ctx: 2048, n_threads: 4 });
+    currentModelPath = entry.path;
+    useLocalModelStore.getState().setLastError(null);
     return context;
   } catch (error) {
-    useLocalModelStore.getState().setError(
-      error instanceof Error ? error.message : 'Failed to load local model'
-    );
+    const message = error instanceof Error ? error.message : 'Failed to load local model';
+    useLocalModelStore.getState().setLastError(message);
     context = null;
     currentModelPath = null;
     return null;
@@ -65,9 +95,14 @@ export type LocalGenerateOptions = {
 };
 
 export async function generateLocal(options: LocalGenerateOptions): Promise<string> {
+  const entry = getActiveEntry();
+  if (!entry) {
+    throw new Error('No on-device model is installed');
+  }
+
   const ctx = await loadLocalModel();
   if (!ctx) {
-    throw new Error('Local model is not ready');
+    throw new Error(useLocalModelStore.getState().lastError ?? 'Local model is not ready');
   }
 
   if (options.signal?.aborted) {
@@ -80,7 +115,7 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
       messages: [{ role: 'user', content: options.prompt }],
       n_predict: 512,
       temperature: 0.7,
-      stop: ['</s>', '<|im_end|>', '<|endoftext|>'],
+      stop: entry.model.stopTokens,
     },
     (data) => {
       if (data.token) {
