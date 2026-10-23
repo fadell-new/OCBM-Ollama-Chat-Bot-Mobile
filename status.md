@@ -1,6 +1,6 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-23 23:01
+Last Updated: 2026-10-23 23:45
 
 ## 🎯 Current Objective
 
@@ -31,7 +31,8 @@ Last Updated: 2026-10-23 23:01
   - เพิ่ม `aiSource: 'auto' | 'local' | 'ollama'` ให้เลือกใช้โมเดลเครื่องหรือคอมได้ตลอด
   - กรองโมเดล Ollama ที่ไม่รองรับ chat (capabilities ไม่มี `completion`) ออกจากรายการ
   - เตือนเมื่อเลือกโมเดลที่คุยไม่ได้ และ auto-fallback ไปตัวที่ใช้ได้
-  - เวอร์ชัน 1.2.0 (versionCode 3) กำลัง build
+  - Build v1.2.0 สำเร็จใน 12.9 นาที
+  - APK: https://expo.dev/artifacts/eas/aTaTJAxvIC63tV-L2OmhVTbFfT2-0A-ozhCStx0jPyk.apk
 
 ## 🚧 In Progress
 
