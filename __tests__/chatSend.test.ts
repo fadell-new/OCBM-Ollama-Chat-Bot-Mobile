@@ -1,4 +1,4 @@
-import { composeRequest } from '@/lib/chatSend';
+import { buildSystemPrompt, composeRequest } from '@/lib/chatSend';
 import type { Chat, Settings } from '@/types';
 
 const settings = {
@@ -14,6 +14,18 @@ const chat = {
   updatedAt: 1,
   messages: [{ id: 'm1', role: 'user', content: 'Hi', createdAt: 1 }],
 } as Chat;
+
+describe('buildSystemPrompt', () => {
+  test('joins trimmed prompt and personal context with a blank line', () => {
+    expect(
+      buildSystemPrompt({ systemPrompt: '  SYS  ', personalContext: '  P  ' })
+    ).toBe('SYS\n\nP');
+  });
+
+  test('returns an empty string when both inputs are blank', () => {
+    expect(buildSystemPrompt({ systemPrompt: '  ', personalContext: '' })).toBe('');
+  });
+});
 
 describe('composeRequest', () => {
   test('includes system prompt, personal context, and model', () => {

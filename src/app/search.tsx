@@ -18,6 +18,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { formatRelativeTime } from '@/lib/format';
+import { goBackOr } from '@/lib/navigation';
 import { searchChats, searchMessages } from '@/lib/search';
 import { STORAGE_KEYS, storage } from '@/lib/storage';
 import { useChatsStore } from '@/store/chatsStore';
@@ -186,7 +187,7 @@ export default function SearchScreen() {
   return (
     <Screen padded={false}>
       <View style={styles.header}>
-        <ScreenHeader title="Search" onBack={() => router.back()} />
+        <ScreenHeader title="Search" onBack={() => goBackOr('/(drawer)')} />
       </View>
 
       <View style={styles.body}>

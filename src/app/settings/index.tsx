@@ -7,17 +7,32 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SettingsRow } from '@/components/SettingsRow';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { APP_VERSION } from '@/lib/appInfo';
+import { goBackOr } from '@/lib/navigation';
+import { useChatsStore } from '@/store/chatsStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { fonts, spacing, type as typeScale } from '@/theme/typography';
 
 export default function SettingsScreen() {
   const { theme } = useAppTheme();
   const settings = useSettingsStore((state) => state.settings);
+  const chatCount = useChatsStore((state) => state.index.length);
+
+  const themeLabel =
+    settings.theme === 'system'
+      ? 'System'
+      : settings.theme === 'dark'
+        ? 'Dark'
+        : 'Light';
+
+  const connectionValue = settings.baseUrl
+    ? settings.baseUrl.replace(/^https?:\/\//, '')
+    : 'Not configured';
 
   return (
     <Screen padded={false}>
       <View style={styles.header}>
-        <ScreenHeader title="Settings" onBack={() => router.back()} />
+        <ScreenHeader title="Settings" onBack={() => goBackOr('/(drawer)')} />
       </View>
 
       <ScrollView
@@ -36,33 +51,61 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <SectionHeader title="Account" />
-        <SettingsRow label="Email" value={settings.profile.email || 'Not set'} />
-        <SettingsRow label="Phone" value={settings.profile.phone || 'Not set'} />
-        <SettingsRow label="Personal Intelligence" value={settings.personalContext ? 'On' : 'Off'} />
+        <SectionHeader title="Account Settings" />
+        <View>
+          <SettingsRow
+            label="Email"
+            value={settings.profile.email || 'Not set'}
+            onPress={() => router.push('/settings/email')}
+          />
+          <SettingsRow
+            label="Phone Number"
+            value={settings.profile.phone || 'Not set'}
+            onPress={() => router.push('/settings/phone')}
+          />
+          <SettingsRow
+            label="Personal Intelligence"
+            value={settings.personalContext ? 'On' : 'Off'}
+            onPress={() => router.push('/settings/personal-intelligence')}
+          />
+        </View>
 
-        <SectionHeader title="AI" />
-        <SettingsRow label="Connection" value={settings.baseUrl || 'Not set'} />
-        <SettingsRow label="Default model" value={settings.defaultModel || 'Not set'} />
-        <SettingsRow
-          label="Customize AI"
-          value={settings.systemPrompt ? 'Custom' : 'Default'}
-        />
+        <SectionHeader title="AI Settings" />
+        <View>
+          <SettingsRow label="Connection Settings" value={connectionValue} />
+          <SettingsRow
+            label="Model Management"
+            value={settings.defaultModel || 'Not selected'}
+          />
+          <SettingsRow
+            label="Customize AI"
+            value={settings.systemPrompt ? 'Custom' : 'Default'}
+            onPress={() => router.push('/settings/customize')}
+          />
+        </View>
 
-        <SectionHeader title="Appearance" />
-        <SettingsRow
-          label="Theme"
-          value={
-            settings.theme === 'system'
-              ? 'System'
-              : settings.theme === 'dark'
-                ? 'Dark'
-                : 'Light'
-          }
-        />
+        <SectionHeader title="General and UI" />
+        <View>
+          <SettingsRow
+            label="Theme"
+            value={themeLabel}
+            onPress={() => router.push('/settings/theme')}
+          />
+          <SettingsRow
+            label="Chat History Management"
+            value={`${chatCount} ${chatCount === 1 ? 'chat' : 'chats'}`}
+            onPress={() => router.push('/settings/history')}
+          />
+        </View>
 
         <SectionHeader title="About" />
-        <SettingsRow label="Version" value="1.0.0" chevron={false} />
+        <View>
+          <SettingsRow
+            label="About OCBM"
+            value={`v${APP_VERSION}`}
+            onPress={() => router.push('/settings/about')}
+          />
+        </View>
       </ScrollView>
     </Screen>
   );
