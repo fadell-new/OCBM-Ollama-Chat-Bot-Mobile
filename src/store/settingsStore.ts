@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
     phone: '',
   },
   onboardingComplete: false,
+  aiSource: 'auto',
 };
 
 function mergeSettings(raw: Partial<Settings> | null): Settings {

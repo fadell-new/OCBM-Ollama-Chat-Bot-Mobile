@@ -209,7 +209,17 @@ export default function ChatScreen() {
     const hasAttachments = attachments.length > 0;
     if ((!text && !hasAttachments) || sendingRef.current) return;
 
-    const useLocal = localModelReady;
+    const useLocal =
+      settings.aiSource === 'local'
+        ? localModelReady
+        : settings.aiSource === 'auto'
+          ? localModelReady
+          : false;
+
+    if (settings.aiSource === 'local' && !localModelReady) {
+      showToast('Download and select an on-device model in Settings.');
+      return;
+    }
 
     if (!useLocal) {
       if (!settings.baseUrl) {
@@ -221,8 +231,30 @@ export default function ChatScreen() {
         showToast('Choose a model in Settings, or download an on-device model.');
         return;
       }
+
+      const selected = models.find((model) => model.name === settings.defaultModel);
+      if (
+        selected &&
+        selected.capabilities.length > 0 &&
+        !selected.capabilities.includes('completion')
+      ) {
+        showToast('That model does not support chat. Pick another in Settings.');
+        return;
+      }
     }
     if (!ignoreVisionWarning && attachments.some((attachment) => attachment.kind === 'image')) {
+      if (useLocal) {
+        Alert.alert(
+          'On-device model cannot read images',
+          'The on-device model works with text only. Switch to the PC model to send images, or send the text without them.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Send anyway', onPress: () => void handleSend(true) },
+          ]
+        );
+        return;
+      }
+
       const currentModel = models.find((model) => model.name === settings.defaultModel);
       const hasVision = currentModel?.capabilities?.includes('vision') ?? false;
       if (!hasVision) {

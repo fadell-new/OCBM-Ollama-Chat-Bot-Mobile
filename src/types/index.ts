@@ -49,6 +49,8 @@ export type Profile = {
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+export type AiSource = 'auto' | 'ollama' | 'local';
+
 export type Settings = {
   baseUrl: string;
   defaultModel: string;
@@ -57,6 +59,7 @@ export type Settings = {
   personalContext: string;
   profile: Profile;
   onboardingComplete: boolean;
+  aiSource: AiSource;
 };
 
 export type OllamaModel = {

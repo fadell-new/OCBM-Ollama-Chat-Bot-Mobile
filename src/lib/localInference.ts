@@ -116,6 +116,7 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
       n_predict: 512,
       temperature: 0.7,
       stop: entry.model.stopTokens,
+      ...(entry.model.thinking ? { enable_thinking: false } : {}),
     },
     (data) => {
       if (data.token) {

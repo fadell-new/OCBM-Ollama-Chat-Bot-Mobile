@@ -82,6 +82,17 @@ export default function SettingsScreen() {
             onPress={() => router.push('/settings/connection')}
           />
           <SettingsRow
+            label="AI Source"
+            value={
+              settings.aiSource === 'local'
+                ? 'On-device'
+                : settings.aiSource === 'ollama'
+                  ? 'PC (Ollama)'
+                  : 'Auto'
+            }
+            onPress={() => router.push('/settings/models')}
+          />
+          <SettingsRow
             label="Model Management"
             value={settings.defaultModel || 'Not selected'}
             onPress={() => router.push('/settings/models')}

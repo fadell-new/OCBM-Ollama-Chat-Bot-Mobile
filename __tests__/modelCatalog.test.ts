@@ -32,9 +32,9 @@ describe('recommendModel', () => {
     expect(recommendModel(4 * GB).id).toBe('qwen2.5-0.5b');
   });
 
-  test('picks the 1B model around 6GB', () => {
-    expect(recommendModel(6 * GB).id).toBe('llama-3.2-1b');
-    expect(recommendModel(6.9 * GB).id).toBe('llama-3.2-1b');
+  test('picks the Thai 1B model around 6GB', () => {
+    expect(recommendModel(6 * GB).id).toBe('typhoon2-1b');
+    expect(recommendModel(6.9 * GB).id).toBe('typhoon2-1b');
   });
 
   test('picks the 1.5B model around 8GB', () => {

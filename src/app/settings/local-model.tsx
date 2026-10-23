@@ -17,6 +17,7 @@ import {
 } from '@/lib/modelDownload';
 import { GB, LOCAL_MODELS, recommendModel, type DeviceModel } from '@/lib/modelCatalog';
 import { useLocalModelStore } from '@/store/localModelStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { fonts, spacing, type as typeScale } from '@/theme/typography';
 
 const STORAGE_BUFFER_BYTES = 300 * 1024 * 1024;
@@ -28,6 +29,7 @@ export default function LocalModelSettingsScreen() {
   const downloads = useLocalModelStore((state) => state.downloads);
   const lastError = useLocalModelStore((state) => state.lastError);
   const setActive = useLocalModelStore((state) => state.setActive);
+  const updateSettings = useSettingsStore((state) => state.update);
 
   const [freeStorage, setFreeStorage] = useState<number | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
@@ -104,6 +106,7 @@ export default function LocalModelSettingsScreen() {
     try {
       await unloadLocalModel();
       setActive(model.id);
+      await updateSettings({ aiSource: 'local' });
       setTestResult(null);
     } finally {
       setBusyId(null);
@@ -223,6 +226,7 @@ export default function LocalModelSettingsScreen() {
             </Text>
             <Text style={[styles.cardText, { color: theme.textMuted }]}>
               {formatBytes(model.sizeBytes)} · {model.languages} · needs {formatBytes(model.minRamBytes)} RAM
+              {model.thinking ? ' · thinking-capable' : ''}
             </Text>
 
             {isDownloading ? (
