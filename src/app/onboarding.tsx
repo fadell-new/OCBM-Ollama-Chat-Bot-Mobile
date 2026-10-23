@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
@@ -10,9 +10,10 @@ import { ModelRow } from '@/components/ModelRow';
 import { Screen } from '@/components/Screen';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { normalizeBaseUrl } from '@/lib/validation';
+import { scanForOllama, type DiscoveredServer } from '@/lib/discovery';
 import { useConnectionStore } from '@/store/connectionStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import { fonts, spacing, type as typeScale } from '@/theme/typography';
+import { fonts, radii, spacing, type as typeScale } from '@/theme/typography';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:11434';
 const DEFAULT_PULL_MODEL = 'qwen2.5:3b';
@@ -34,6 +35,9 @@ export default function OnboardingScreen() {
   const [baseUrl, setBaseUrl] = useState(settings.baseUrl || DEFAULT_BASE_URL);
   const [inputError, setInputError] = useState<string>();
   const [selectedModel, setSelectedModel] = useState<string>(settings.defaultModel);
+  const [scanning, setScanning] = useState(false);
+  const [foundServers, setFoundServers] = useState<DiscoveredServer[]>([]);
+  const scanAbortRef = useRef<AbortController | null>(null);
 
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
   const ready = status === 'online';
@@ -72,6 +76,12 @@ export default function OnboardingScreen() {
     }
   }, [availableModelNames, selectedModel]);
 
+  useEffect(() => {
+    return () => {
+      scanAbortRef.current?.abort();
+    };
+  }, []);
+
   const runTest = async () => {
     const trimmed = (normalizedBaseUrl ?? '').trim();
     if (!trimmed) {
@@ -91,6 +101,22 @@ export default function OnboardingScreen() {
     await startPull(trimmed, DEFAULT_PULL_MODEL);
     await refresh(trimmed);
     setSelectedModel(DEFAULT_PULL_MODEL);
+  };
+
+  const runScan = async () => {
+    scanAbortRef.current?.abort();
+    const controller = new AbortController();
+    scanAbortRef.current = controller;
+    setScanning(true);
+    setFoundServers([]);
+    try {
+      const servers = await scanForOllama((server) => {
+        setFoundServers((current) => [...current, server]);
+      }, controller.signal);
+      setFoundServers(servers);
+    } finally {
+      setScanning(false);
+    }
   };
 
   const finish = async (modelOverride?: string) => {
@@ -143,6 +169,36 @@ export default function OnboardingScreen() {
             />
 
             <AppButton label="Test Connection" onPress={() => void runTest()} loading={status === 'testing'} variant="secondary" />
+
+            <AppButton
+              label={scanning ? 'Scanning…' : 'Find Ollama on this network'}
+              onPress={() => void runScan()}
+              loading={scanning}
+              variant="ghost"
+              disabled={scanning}
+            />
+
+            {foundServers.length > 0 ? (
+              <View style={styles.foundList}>
+                {foundServers.map((server) => (
+                  <Pressable
+                    key={server.url}
+                    onPress={() => {
+                      setBaseUrl(server.url);
+                      void runTest();
+                    }}
+                    style={({ pressed }) => [
+                      styles.foundRow,
+                      { backgroundColor: pressed ? theme.surface : theme.surfaceAlt },
+                    ]}
+                  >
+                    <Text style={[styles.foundUrl, { color: theme.text }]}>{server.url}</Text>
+                    <Text style={[styles.foundLatency, { color: theme.textMuted }]}>{`${server.latencyMs} ms`}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+
 
             {status !== 'unknown' ? (
               <AppCard>
@@ -279,5 +335,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
+  },
+  foundList: {
+    gap: spacing.xs,
+  },
+  foundRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.bubble,
+  },
+  foundUrl: {
+    fontFamily: fonts.body,
+    fontSize: typeScale.label,
+  },
+  foundLatency: {
+    fontFamily: fonts.body,
+    fontSize: typeScale.caption,
   },
 });

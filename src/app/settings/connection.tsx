@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/components/AppButton';
 import { AppCard } from '@/components/AppCard';
@@ -9,9 +9,10 @@ import { SettingsPage } from '@/components/SettingsPage';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { goBackOr } from '@/lib/navigation';
 import { normalizeBaseUrl } from '@/lib/validation';
+import { scanForOllama, type DiscoveredServer } from '@/lib/discovery';
 import { useConnectionStore } from '@/store/connectionStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import { fonts, spacing, type as typeScale } from '@/theme/typography';
+import { fonts, radii, spacing, type as typeScale } from '@/theme/typography';
 
 export default function ConnectionSettingsScreen() {
   const { theme } = useAppTheme();
@@ -29,6 +30,9 @@ export default function ConnectionSettingsScreen() {
   const [inputError, setInputError] = useState<string>();
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [foundServers, setFoundServers] = useState<DiscoveredServer[]>([]);
+  const scanAbortRef = useRef<AbortController | null>(null);
 
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
 
@@ -39,6 +43,12 @@ export default function ConnectionSettingsScreen() {
       await refresh(settings.baseUrl);
     })();
   }, [refresh, settings.baseUrl, testConnection]);
+
+  useEffect(() => {
+    return () => {
+      scanAbortRef.current?.abort();
+    };
+  }, []);
 
   const runTest = async () => {
     const normalized = normalizeBaseUrl(baseUrl);
@@ -52,6 +62,22 @@ export default function ConnectionSettingsScreen() {
     await testConnection(normalized);
     await refresh(normalized);
     setTesting(false);
+  };
+
+  const runScan = async () => {
+    scanAbortRef.current?.abort();
+    const controller = new AbortController();
+    scanAbortRef.current = controller;
+    setScanning(true);
+    setFoundServers([]);
+    try {
+      const servers = await scanForOllama((server) => {
+        setFoundServers((current) => [...current, server]);
+      }, controller.signal);
+      setFoundServers(servers);
+    } finally {
+      setScanning(false);
+    }
   };
 
   const save = async () => {
@@ -120,6 +146,36 @@ export default function ConnectionSettingsScreen() {
         loading={testing}
         variant="secondary"
       />
+      <AppButton
+        label={scanning ? 'Scanning…' : 'Find Ollama on this network'}
+        onPress={() => void runScan()}
+        loading={scanning}
+        variant="ghost"
+        disabled={scanning}
+      />
+
+      {foundServers.length > 0 ? (
+        <AppCard>
+          <Text style={[styles.helpTitle, { color: theme.text }]}>Found servers</Text>
+          {foundServers.map((server) => (
+            <Pressable
+              key={server.url}
+              onPress={() => {
+                setBaseUrl(server.url);
+                void runTest();
+              }}
+              style={({ pressed }) => [
+                styles.foundRow,
+                { backgroundColor: pressed ? theme.surface : 'transparent' },
+              ]}
+            >
+              <Text style={[styles.foundUrl, { color: theme.text }]}>{server.url}</Text>
+              <Text style={[styles.foundLatency, { color: theme.textMuted }]}>{`${server.latencyMs} ms`}</Text>
+            </Pressable>
+          ))}
+        </AppCard>
+      ) : null}
+
 
       {lastCheckedAt !== undefined ? (
         <AppCard>
@@ -157,6 +213,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+  },
+  foundRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.bubble,
+  },
+  foundUrl: {
+    fontFamily: fonts.body,
+    fontSize: typeScale.label,
+  },
+  foundLatency: {
+    fontFamily: fonts.body,
+    fontSize: typeScale.caption,
   },
   resultError: {
     flex: 1,
