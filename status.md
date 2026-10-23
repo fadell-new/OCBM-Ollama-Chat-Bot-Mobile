@@ -34,6 +34,7 @@ Last Updated: 2026-10-23 22:44
 
 ## ⏳ Pending / Todo
 
+- [ ] กรองโมเดลที่ไม่รองรับ chat ออกจาก Model Management (เช่น `capabilities: ["decision"]`) และแสดงข้อความอธิบาย
 - [ ] พิจารณา streaming แบบ abort กลางทางสำหรับ local inference (ปัจจุบัน abort ได้หลังจบ)
 - [ ] พิจารณา resume download เมื่อเน็ตหลุด
 - [ ] พิจารณาเพิ่มตัวเลือกโมเดลในอนาคต (ยังต้อง ≤ 2B)
@@ -41,6 +42,9 @@ Last Updated: 2026-10-23 22:44
 
 ## 📝 Notes & Context
 
+- **ห้ามเลือกโมเดลที่ไม่รองรับ chat** — Ollama 0.40.9 คืน `capabilities` ใน `/api/tags`
+  - `tev1:0.8b` = `decision` → เรียก `/api/chat` ได้ 400 `"does not support chat"`
+  - ใช้ได้: `qwen2.5:3b` (`completion,tools`), `qwen3:1.7b` (`completion,tools,thinking`)
 - **EAS Free plan timeout = 45 นาที** — ต้องคงการจำกัด ABI/variants ไว้ ห้ามลบ `ORG_GRADLE_PROJECT_rnllamaVariants` จาก `eas.json`
 - **llama.rn 0.13.0-rc.8** ตั้ง `rnllamaBuildFromSource=true` ใน `node_modules/llama.rn/android/gradle.properties` (ห้ามใช้ prebuilt เพราะ stale)
 - APK เป็น **arm64-v8a เท่านั้น**
