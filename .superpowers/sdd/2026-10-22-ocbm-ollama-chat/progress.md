@@ -16,4 +16,9 @@ Pre-flight: `expo-file-system` 58 new API ships alongside legacy. Ruling: use `e
 - Task 4: complete (tokens, typography, ThemeProvider, useAppTheme; 2 theme tests passing). Commit a7aa833.
 - Task 5: complete (14 components; 5 component tests passing; tsc clean). RNTL 14 uses async `render`/`fireEvent`; test helper adjusted. `@expo/vector-icons` added. Commit below.
 - Task 5 → Task 7/8/9/10/11/12/13: all screens consume `Screen`, `AppButton`, `AppInput`, `SettingsRow`, dialogs, `EmptyState`. APIs match plan.
-- Task 6: in progress.
+- Task 6: complete (storage + settings + chats stores; 11 store tests, 51 total passing; tsc clean). Commit 7154633.
+- Task 6 → Task 7/8/9/10/11/12/13: stores expose `hydrate`, `createChat`, `openChat`, `appendMessage`, `updateMessage(...,{persist})`, `persistChat`, `clearAllChats`, settings `update`. Interfaces match.
+- Task 7: complete (root providers + hydration, redirect, drawer shell, settings/search/onboarding placeholders, `ScreenHeader`, `DrawerContent`; tsc clean; 51 tests passing; web export + Playwright QA at 390×844 passed). Commit below.
+- Task 7 ruling: `DrawerContentComponentProps` must come from `expo-router/drawer`, not `@react-navigation/drawer`, because Expo Router 58 vendors its own React Navigation drawer types; the two state types are structurally incompatible.
+- Task 7 → Task 8: chat route is `src/app/(drawer)/index.tsx`; Task 8 replaces the placeholder. `DrawerContent` already opens/creates chats and navigates to `/settings` and `/search`.
+- Task 8: in progress.
