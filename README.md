@@ -1,56 +1,82 @@
-# Welcome to your Expo app 👋
+# OCBM
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+OCBM is an Android-first (iOS-ready) chat app for talking to an Ollama server running on your own machine. It is built with React Native + Expo and ships a calm, serif-accented UI derived from the supplied Figma file.
 
-## Get started
+- **Private by default** — no accounts, no cloud, no telemetry. Everything stays on your device and your Ollama host.
+- **Local models** — streams responses from any Ollama model, with model management, pulling, and deletion built in.
+- **Personal intelligence** — optional system prompt + personal notes injected into every request.
+- **Attachments** — send images (vision models) and small text files alongside your messages.
+- **Theming** — Light, Dark, and System modes.
 
-1. Install dependencies
+## Prerequisites
 
-   ```bash
-   npm install
-   ```
+- Node.js 20+
+- Expo CLI (`npx expo`)
+- An Ollama server reachable from the device (`http://<host>:11434`)
 
-2. Start the app
+## Ollama setup
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+For the Android emulator, `127.0.0.1` on the device refers to the emulator itself. Point OCBM at the host machine instead:
 
 ```bash
-npm run reset-project
+# On the host machine
+OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=* ollama serve
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+- Allow inbound traffic on port `11434` in the firewall.
+- Android emulator: use `http://10.0.2.2:11434`.
+- Real device on the same network: use `http://<LAN-IP>:11434`.
+- Pull a model: `ollama pull qwen2.5:3b`.
 
-### Other setup steps
+## Run
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm install
+npx expo start
+```
 
-## Learn more
+Scan the QR code with Expo Go (Android) or press `w` for web.
 
-To learn more about developing your project with Expo, look at the following resources:
+Web QA / development:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx expo start --web
+```
 
-## Join the community
+## Tests
 
-Join our community of developers creating universal apps.
+```bash
+npm test -- --runInBand
+npx tsc --noEmit
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Build APK (EAS)
+
+```bash
+npm install -g eas-cli
+eas login
+eas build --profile preview --platform android
+```
+
+See `eas.json` for the `development`, `preview`, and `production` profiles.
+
+## Troubleshooting
+
+- **Connection refused** — make sure Ollama is running with `OLLAMA_HOST=0.0.0.0` and the firewall allows port 11434.
+- **Cleartext blocked** — `app.json` already sets `usesCleartextTraffic: true` for Android.
+- **Model not found** — pull the model on the host (`ollama pull <name>`) or use Model Management in Settings.
+- **Vision model** — attach images only works with models that report a `vision` capability.
+
+## Project structure
+
+```
+src/
+  app/          Expo Router routes (drawer, settings, onboarding, search)
+  components/   Shared UI (Composer, ChatBubble, SettingsPage, ...)
+  lib/          Utilities (chatSend, context, attachments, storage, ...)
+  store/        Zustand stores (chats, settings, connection)
+  api/          Ollama client
+  theme/        Tokens + typography
+  types/        Shared TypeScript types
+docs/           Design, architecture, roadmap, changelog
+```
