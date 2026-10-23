@@ -13,4 +13,7 @@ Pre-flight: `expo-file-system` 58 new API ships alongside legacy. Ruling: use `e
 - Task 2 → Task 3: `Message`, `OllamaMessage`, `OllamaModel`, `PullProgress` consumed by client tests/impl. Interfaces match plan.
 - Task 3: complete (ndjson, context, Ollama client; 20 tests passing; tsc clean). Commit 31c0e6d.
 - Task 3 → Task 6/8/11: client constructor injects fetch; `chat` streams NDJSON; `pullModel` progress; `listModels` maps capabilities. Interfaces match.
-- Task 4: in progress.
+- Task 4: complete (tokens, typography, ThemeProvider, useAppTheme; 2 theme tests passing). Commit a7aa833.
+- Task 5: complete (14 components; 5 component tests passing; tsc clean). RNTL 14 uses async `render`/`fireEvent`; test helper adjusted. `@expo/vector-icons` added. Commit below.
+- Task 5 → Task 7/8/9/10/11/12/13: all screens consume `Screen`, `AppButton`, `AppInput`, `SettingsRow`, dialogs, `EmptyState`. APIs match plan.
+- Task 6: in progress.

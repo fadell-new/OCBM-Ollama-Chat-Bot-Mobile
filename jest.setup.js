@@ -5,3 +5,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('expo/fetch', () => ({
   fetch: (...args) => global.fetch(...args),
 }));
+
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: () => null,
+}));
