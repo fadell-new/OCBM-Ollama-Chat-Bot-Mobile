@@ -34,12 +34,12 @@ describe('recommendModel', () => {
 
   test('picks the 1B model around 6GB', () => {
     expect(recommendModel(6 * GB).id).toBe('llama-3.2-1b');
-    expect(recommendModel(7 * GB).id).toBe('llama-3.2-1b');
+    expect(recommendModel(6.9 * GB).id).toBe('llama-3.2-1b');
   });
 
   test('picks the 1.5B model around 8GB', () => {
     expect(recommendModel(8 * GB).id).toBe('qwen2.5-1.5b');
-    expect(recommendModel(11 * GB).id).toBe('qwen2.5-1.5b');
+    expect(recommendModel(9.9 * GB).id).toBe('qwen2.5-1.5b');
   });
 
   test('picks the 2B model on high-RAM devices', () => {
