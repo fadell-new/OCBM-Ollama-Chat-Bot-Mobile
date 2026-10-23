@@ -1,4 +1,5 @@
 import { fetch as expoFetch } from 'expo/fetch';
+import { Platform } from 'react-native';
 
 import { parseNdjsonChunk } from '@/lib/ndjson';
 import { normalizeBaseUrl } from '@/lib/validation';
@@ -78,7 +79,13 @@ export class OllamaClient {
       );
     }
     this.baseUrl = normalized;
-    this.fetchImpl = fetchImpl ?? (expoFetch as unknown as FetchLike);
+    this.fetchImpl =
+      fetchImpl ??
+      (Platform.OS === 'web'
+        ? ((globalThis as unknown as { fetch: FetchLike }).fetch.bind(
+            globalThis
+          ) as FetchLike)
+        : (expoFetch as unknown as FetchLike));
   }
 
   async testConnection(): Promise<TestResult> {

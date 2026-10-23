@@ -8,9 +8,15 @@ export type ToastProps = {
   message: string | null;
   onHide: () => void;
   duration?: number;
+  bottomOffset?: number;
 };
 
-export function Toast({ message, onHide, duration = 2600 }: ToastProps) {
+export function Toast({
+  message,
+  onHide,
+  duration = 2600,
+  bottomOffset = spacing.xxxl + spacing.lg,
+}: ToastProps) {
   const { theme } = useAppTheme();
 
   useEffect(() => {
@@ -22,7 +28,7 @@ export function Toast({ message, onHide, duration = 2600 }: ToastProps) {
   if (!message) return null;
 
   return (
-    <View pointerEvents="none" style={styles.root}>
+    <View pointerEvents="none" style={[styles.root, { bottom: bottomOffset }]}>
       <View style={[styles.toast, { backgroundColor: theme.text }]}>
         <Text style={[styles.text, { color: theme.bg }]}>{message}</Text>
       </View>
@@ -35,7 +41,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: spacing.xxxl + spacing.lg,
     alignItems: 'center',
     zIndex: 1000,
   },

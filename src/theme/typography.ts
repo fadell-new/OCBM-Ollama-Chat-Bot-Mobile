@@ -1,12 +1,8 @@
-import {
-  InknutAntiqua_400Regular,
-  InknutAntiqua_600SemiBold,
-} from '@expo-google-fonts/inknut-antiqua';
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from '@expo-google-fonts/inter';
+import { InknutAntiqua_400Regular } from '@expo-google-fonts/inknut-antiqua/400Regular';
+import { InknutAntiqua_600SemiBold } from '@expo-google-fonts/inknut-antiqua/600SemiBold';
+import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
+import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
+import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
 
 export const fontAssets = {
   InknutAntiqua_400Regular,

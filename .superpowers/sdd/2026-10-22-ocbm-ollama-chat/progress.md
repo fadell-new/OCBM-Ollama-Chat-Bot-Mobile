@@ -21,4 +21,11 @@ Pre-flight: `expo-file-system` 58 new API ships alongside legacy. Ruling: use `e
 - Task 7: complete (root providers + hydration, redirect, drawer shell, settings/search/onboarding placeholders, `ScreenHeader`, `DrawerContent`; tsc clean; 51 tests passing; web export + Playwright QA at 390×844 passed). Commit below.
 - Task 7 ruling: `DrawerContentComponentProps` must come from `expo-router/drawer`, not `@react-navigation/drawer`, because Expo Router 58 vendors its own React Navigation drawer types; the two state types are structurally incompatible.
 - Task 7 → Task 8: chat route is `src/app/(drawer)/index.tsx`; Task 8 replaces the placeholder. `DrawerContent` already opens/creates chats and navigates to `/settings` and `/search`.
-- Task 8: in progress.
+- Task 8: complete (composeRequest + ChatBubble + Composer + chat screen; 8 new tests, 59 total passing; tsc clean; Playwright QA at 390×844 passed: empty state, online badge, send, streaming, stop, regenerate, persisted-chat reopen, markdown inline code, copy toast, 404 error bubble, dark mode). Commit below.
+- Task 8 ruling: `expo/fetch` resolves to `globalThis.fetch` on web, but calling it as an instance property (`this.fetchImpl(...)`) throws `TypeError: Failed to execute 'fetch' on 'Window': Illegal invocation`. Ruling: on web use `globalThis.fetch.bind(globalThis)`; native keeps `expo/fetch` for streaming. Cost if wrong: web QA only; native unaffected.
+- Task 8 ruling: `Toast` needed a `bottomOffset` prop; chat passes `banner ? 128 : 80` so the toast clears the composer and offline banner. Default remains 48 for other screens.
+- Task 8 ruling: connection status lives in `src/store/connectionStore.ts` (implemented before Task 11) because the chat header badge and offline banner needed it; Task 11 will build the connection/model screens on the same store.
+- Task 8 ruling: import fonts and Ionicons from package subpaths (`@expo-google-fonts/inter/400Regular`, `@expo/vector-icons/Ionicons`) so Metro bundles only the five used font weights and one icon font; `jest.setup.js` mocks the Ionicons subpath. Web export assets dropped 63→25 and the shared web chunk 534KB→107KB.
+- Task 8 QA note: no vision model is installed on the QA machine, so image attachments remain UI-only until Task 13 and a vision-capable model are available.
+- Task 8 → Task 9: `chatsStore` already exposes `renameChat` and `deleteChat`; `DrawerContent` still needs long-press rename/delete, and the search screen remains a placeholder.
+
