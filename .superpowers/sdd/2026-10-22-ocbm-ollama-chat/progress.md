@@ -8,4 +8,7 @@ Pre-flight: `expo-file-system` 58 new API ships alongside legacy. Ruling: use `e
 
 ## Progress
 
-- Task 1: in progress
+- Task 1: complete (scaffold + tooling; `src/app` template, jest alias mapper via POSIX path helper). Commit 9f3a38a.
+- Task 2: complete (types + validation + format; 13 tests passing; tsc clean). Commit below.
+- Task 2 → Task 3: `Message`, `OllamaMessage`, `OllamaModel`, `PullProgress` consumed by client tests/impl. Interfaces match plan.
+- Task 3: in progress.
