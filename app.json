@@ -45,7 +45,8 @@
         {
           "photosPermission": "Allow OCBM to access your photos so you can send them to your AI model."
         }
-      ]
+      ],
+      "llama.rn"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -10,6 +10,7 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import { APP_VERSION } from '@/lib/appInfo';
 import { goBackOr } from '@/lib/navigation';
 import { useChatsStore } from '@/store/chatsStore';
+import { useLocalModelStore } from '@/store/localModelStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { fonts, spacing, type as typeScale } from '@/theme/typography';
 
@@ -17,6 +18,7 @@ export default function SettingsScreen() {
   const { theme } = useAppTheme();
   const settings = useSettingsStore((state) => state.settings);
   const chatCount = useChatsStore((state) => state.index.length);
+  const localModelStatus = useLocalModelStore((state) => state.status);
 
   const themeLabel =
     settings.theme === 'system'
@@ -81,6 +83,11 @@ export default function SettingsScreen() {
             label="Model Management"
             value={settings.defaultModel || 'Not selected'}
             onPress={() => router.push('/settings/models')}
+          />
+          <SettingsRow
+            label="On-device AI"
+            value={localModelStatus === 'ready' ? 'Ready' : 'Not downloaded'}
+            onPress={() => router.push('/settings/local-model')}
           />
           <SettingsRow
             label="Customize AI"

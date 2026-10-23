@@ -30,12 +30,14 @@ import { Toast } from '@/components/Toast';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { composeRequest, type ComposedRequest } from '@/lib/chatSend';
 import { makeId } from '@/lib/id';
+import { generateLocal } from '@/lib/localInference';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { copyToAttachments, readTextFile, toOllamaImages, validateAttachment } from '@/lib/attachments';
 import { useChatsStore } from '@/store/chatsStore';
 import { useConnectionStore } from '@/store/connectionStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useLocalModelStore } from '@/store/localModelStore';
 import { fonts, radii, spacing, type as typeScale } from '@/theme/typography';
 import type { Attachment, Message } from '@/types';
 
@@ -59,6 +61,7 @@ export default function ChatScreen() {
   const latencyMs = useConnectionStore((state) => state.latencyMs);
   const testConnection = useConnectionStore((state) => state.test);
   const models = useConnectionStore((state) => state.models);
+  const localModelReady = useLocalModelStore((state) => state.status === 'ready');
 
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -199,16 +202,19 @@ export default function ChatScreen() {
     const hasAttachments = attachments.length > 0;
     if ((!text && !hasAttachments) || sendingRef.current) return;
 
-    if (!settings.baseUrl) {
-      showToast('Add your Ollama address in Settings.');
-      return;
-    }
+    const useLocal = localModelReady;
 
-    if (!settings.defaultModel) {
-      showToast('Choose a model in Settings.');
-      return;
-    }
+    if (!useLocal) {
+      if (!settings.baseUrl) {
+        showToast('Add your Ollama address in Settings, or download an on-device model.');
+        return;
+      }
 
+      if (!settings.defaultModel) {
+        showToast('Choose a model in Settings, or download an on-device model.');
+        return;
+      }
+    }
     if (!ignoreVisionWarning && attachments.some((attachment) => attachment.kind === 'image')) {
       const currentModel = models.find((model) => model.name === settings.defaultModel);
       const hasVision = currentModel?.capabilities?.includes('vision') ?? false;
@@ -259,8 +265,6 @@ export default function ChatScreen() {
 
     const withUser = useChatsStore.getState().activeChat;
     if (!withUser) return;
-
-    const request = composeRequest(withUser, settings);
     const assistantId = makeId('m');
 
     await appendMessage(chat.id, {
@@ -271,7 +275,31 @@ export default function ChatScreen() {
       status: 'streaming',
     });
 
+    if (useLocal) {
+      try {
+        await generateLocal({
+          prompt: content,
+          onToken: (token) => {
+            const current = useChatsStore.getState().activeChat;
+            if (!current) return;
+            const msg = current.messages.find((m) => m.id === assistantId);
+            if (!msg) return;
+            void updateMessage(chat.id, assistantId, { content: (msg.content ?? '') + token });
+          },
+        });
+        await updateMessage(chat.id, assistantId, { status: 'done' });
+      } catch (error) {
+        await updateMessage(chat.id, assistantId, {
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Generation failed.',
+        });
+      }
+      return;
+    }
+
+    const request = composeRequest(withUser, settings);
     const controller = new AbortController();
+    await runCompletion(chat.id, assistantId, request, controller);
     await runCompletion(chat.id, assistantId, request, controller);
   };
 
