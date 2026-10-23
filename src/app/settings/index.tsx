@@ -72,10 +72,15 @@ export default function SettingsScreen() {
 
         <SectionHeader title="AI Settings" />
         <View>
-          <SettingsRow label="Connection Settings" value={connectionValue} />
+          <SettingsRow
+            label="Connection Settings"
+            value={connectionValue}
+            onPress={() => router.push('/settings/connection')}
+          />
           <SettingsRow
             label="Model Management"
             value={settings.defaultModel || 'Not selected'}
+            onPress={() => router.push('/settings/models')}
           />
           <SettingsRow
             label="Customize AI"
