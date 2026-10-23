@@ -31,6 +31,55 @@ describe('chatsStore', () => {
     expect(state.index[0].messageCount).toBe(1);
   });
 
+  test('preview falls back to the error text instead of No messages', async () => {
+    const chat = await useChatsStore.getState().createChat();
+    await useChatsStore.getState().appendMessage(chat.id, {
+      id: 'm1',
+      role: 'user',
+      content: 'Hello there',
+      createdAt: 1,
+      status: 'done',
+    });
+    await useChatsStore.getState().appendMessage(chat.id, {
+      id: 'm2',
+      role: 'assistant',
+      content: '',
+      createdAt: 2,
+      status: 'sending',
+    });
+    await useChatsStore.getState().updateMessage(
+      chat.id,
+      'm2',
+      { status: 'error', error: 'Model not found.' },
+      { persist: true }
+    );
+
+    const state = useChatsStore.getState();
+    expect(state.index[0].preview).toBe('Model not found.');
+    expect(state.index[0].messageCount).toBe(2);
+  });
+
+  test('preview uses the last message with content while a response is empty', async () => {
+    const chat = await useChatsStore.getState().createChat();
+    await useChatsStore.getState().appendMessage(chat.id, {
+      id: 'm1',
+      role: 'user',
+      content: 'Hello there',
+      createdAt: 1,
+      status: 'done',
+    });
+    await useChatsStore.getState().appendMessage(chat.id, {
+      id: 'm2',
+      role: 'assistant',
+      content: '',
+      createdAt: 2,
+      status: 'streaming',
+    });
+    await useChatsStore.getState().persistChat(chat.id);
+
+    expect(useChatsStore.getState().index[0].preview).toBe('Hello there');
+  });
+
   test('renameChat updates the title and index', async () => {
     const chat = await useChatsStore.getState().createChat();
     await useChatsStore.getState().renameChat(chat.id, 'Renamed');

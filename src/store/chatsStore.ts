@@ -10,12 +10,24 @@ function sortIndex(index: ChatSummary[]): ChatSummary[] {
 
 function toSummary(chat: Chat): ChatSummary {
   const last = chat.messages[chat.messages.length - 1];
-  const preview = (last?.content ?? '').replace(/\s+/g, ' ').trim().slice(0, 80);
+  const lastWithContent = [...chat.messages]
+    .reverse()
+    .find((message) => message.content.trim().length > 0);
+
+  let source = last?.content ?? '';
+  if (!source.trim() && last?.status === 'error' && last.error?.trim()) {
+    source = last.error;
+  }
+  if (!source.trim()) {
+    source = lastWithContent?.content ?? '';
+  }
+
+  const preview = source.replace(/\s+/g, ' ').trim().slice(0, 80);
 
   return {
     id: chat.id,
     title: chat.title,
-    preview: preview || 'No messages',
+    preview: preview || (last?.status === 'error' ? 'Response failed' : 'No messages'),
     createdAt: chat.createdAt,
     updatedAt: chat.updatedAt,
     messageCount: chat.messages.length,

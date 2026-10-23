@@ -159,6 +159,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: typeScale.body,
     paddingVertical: spacing.md,
+    outlineStyle: 'solid',
+    outlineWidth: 0,
   },
   multilineInput: {
     minHeight: 96,

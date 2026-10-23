@@ -28,4 +28,11 @@ Pre-flight: `expo-file-system` 58 new API ships alongside legacy. Ruling: use `e
 - Task 8 ruling: import fonts and Ionicons from package subpaths (`@expo-google-fonts/inter/400Regular`, `@expo/vector-icons/Ionicons`) so Metro bundles only the five used font weights and one icon font; `jest.setup.js` mocks the Ionicons subpath. Web export assets dropped 63→25 and the shared web chunk 534KB→107KB.
 - Task 8 QA note: no vision model is installed on the QA machine, so image attachments remain UI-only until Task 13 and a vision-capable model are available.
 - Task 8 → Task 9: `chatsStore` already exposes `renameChat` and `deleteChat`; `DrawerContent` still needs long-press rename/delete, and the search screen remains a placeholder.
+- Task 9: complete (`searchChats`/`searchMessages`, real search screen, drawer long-press action sheet; 10 new tests, 69 total passing; tsc clean; web export succeeds with 25 assets). Playwright QA at 390×844 passed: empty state, “pasta” no-match, “ocean” and “hello” results with highlighted snippets and match counts, opening a result, long-press Rename to “Ocean notes”, long-press Delete with confirmation, storage index/key removed, and the chat-preview fallback. Commit below.
+- Task 9 ruling: the search screen loads every chat body from AsyncStorage on mount and includes the live `activeChat`; `searchChats` covers summaries, while `searchMessages` scans bodies. Cost: O(number of chats) local reads, acceptable for a local-only app; a persisted full-text index can be added later if needed.
+- Task 9 ruling: long-press opens a small modal action sheet (Rename/Delete/Cancel) because a single long-press must expose both actions; `delayLongPress=380` and `onPress` is suppressed for 800 ms after a long press so the chat does not open underneath the sheet.
+- Task 9 ruling: `toSummary` now falls back to the last non-empty message, then the last error text, then “Response failed” instead of showing “No messages” for error or empty-streaming chats. Two `chatsStore` tests cover this.
+- Task 9 ruling: `AppInput` sets `outlineStyle: 'solid'` and `outlineWidth: 0` to remove Chrome’s black focus ring on web; native inputs are unaffected.
+- Task 9 QA note: QA localStorage now contains one chat titled “Ocean notes” (8 messages, last assistant error “Model not found…”), model `qwen2.5:3b`, theme `system`.
+
 
