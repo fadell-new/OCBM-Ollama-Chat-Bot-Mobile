@@ -21,6 +21,7 @@ export type Message = {
   status?: MessageStatus;
   error?: string;
   attachments?: Attachment[];
+  images?: string[];
 };
 
 export type Chat = {

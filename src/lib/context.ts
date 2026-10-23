@@ -45,7 +45,7 @@ export function buildContextMessages(
       content = content.slice(0, remaining);
     }
 
-    selected.unshift({ role: message.role, content });
+    selected.unshift({ role: message.role, content, images: message.images });
     usedChars += content.length;
   }
 

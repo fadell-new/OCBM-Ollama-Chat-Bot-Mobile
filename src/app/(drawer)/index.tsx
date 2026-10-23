@@ -9,6 +9,7 @@ import {
   type ComponentRef,
 } from 'react';
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -29,11 +30,14 @@ import { Toast } from '@/components/Toast';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { composeRequest, type ComposedRequest } from '@/lib/chatSend';
 import { makeId } from '@/lib/id';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import { copyToAttachments, readTextFile, toOllamaImages, validateAttachment } from '@/lib/attachments';
 import { useChatsStore } from '@/store/chatsStore';
 import { useConnectionStore } from '@/store/connectionStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { fonts, radii, spacing, type as typeScale } from '@/theme/typography';
-import type { Message } from '@/types';
+import type { Attachment, Message } from '@/types';
 
 const SUGGESTIONS = [
   'Explain a hard idea in simple words',
@@ -54,8 +58,10 @@ export default function ChatScreen() {
   const status = useConnectionStore((state) => state.status);
   const latencyMs = useConnectionStore((state) => state.latencyMs);
   const testConnection = useConnectionStore((state) => state.test);
+  const models = useConnectionStore((state) => state.models);
 
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -188,9 +194,10 @@ export default function ChatScreen() {
     [settings.baseUrl, updateMessage]
   );
 
-  const handleSend = async () => {
+  const handleSend = async (ignoreVisionWarning = false) => {
     const text = input.trim();
-    if (!text || sendingRef.current) return;
+    const hasAttachments = attachments.length > 0;
+    if ((!text && !hasAttachments) || sendingRef.current) return;
 
     if (!settings.baseUrl) {
       showToast('Add your Ollama address in Settings.');
@@ -202,6 +209,35 @@ export default function ChatScreen() {
       return;
     }
 
+    if (!ignoreVisionWarning && attachments.some((attachment) => attachment.kind === 'image')) {
+      const currentModel = models.find((model) => model.name === settings.defaultModel);
+      const hasVision = currentModel?.capabilities?.includes('vision') ?? false;
+      if (!hasVision) {
+        Alert.alert('Model may not support images', 'The selected model may not handle images. Send anyway?', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Send anyway', onPress: () => void handleSend(true) },
+        ]);
+        return;
+      }
+    }
+
+    let content = text;
+    const textAttachments = attachments.filter((attachment) => attachment.kind === 'text');
+    for (const attachment of textAttachments) {
+      try {
+        const fileContent = await readTextFile(attachment.uri);
+        content += `\n\n---\nFile: ${attachment.name}\n${fileContent}`;
+      } catch {
+        content += `\n\n---\nFile: ${attachment.name}\n(unreadable)`;
+      }
+    }
+
+    const imageAttachments = attachments.filter((attachment) => attachment.kind === 'image');
+    const images =
+      imageAttachments.length > 0 ? await toOllamaImages(imageAttachments) : undefined;
+
+    const pendingAttachments = attachments;
+    setAttachments([]);
     setInput('');
 
     let chat = useChatsStore.getState().activeChat;
@@ -212,9 +248,11 @@ export default function ChatScreen() {
     const userMessage: Message = {
       id: makeId('m'),
       role: 'user',
-      content: text,
+      content,
       createdAt: Date.now(),
       status: 'done',
+      attachments: pendingAttachments,
+      images,
     };
 
     await appendMessage(chat.id, userMessage);
@@ -235,6 +273,88 @@ export default function ChatScreen() {
 
     const controller = new AbortController();
     await runCompletion(chat.id, assistantId, request, controller);
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments((current) => current.filter((attachment) => attachment.id !== id));
+  };
+
+  const handleAttach = () => {
+    Alert.alert('Add attachment', 'Choose a source', [
+      { text: 'Photo', onPress: () => void pickPhoto() },
+      { text: 'File', onPress: () => void pickFile() },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  const pickPhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      allowsMultipleSelection: false,
+    });
+    if (result.canceled || !result.assets?.length) return;
+
+    const asset = result.assets[0];
+    const validation = validateAttachment(
+      {
+        kind: 'image',
+        size: asset.fileSize ?? 0,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+      },
+      attachments
+    );
+    if (!validation.ok) {
+      showToast(validation.message);
+      return;
+    }
+
+    try {
+      const uri = await copyToAttachments(asset.uri, asset.fileName ?? 'image.jpg');
+      const attachment: Attachment = {
+        id: makeId('a'),
+        kind: 'image',
+        uri,
+        name: asset.fileName ?? 'image.jpg',
+        mimeType: asset.mimeType ?? 'image/jpeg',
+        size: asset.fileSize ?? 0,
+      };
+      setAttachments((current) => [...current, attachment]);
+    } catch {
+      showToast('Could not add the photo.');
+    }
+  };
+
+  const pickFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['text/*', 'application/json'],
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled || !result.assets?.length) return;
+
+    const asset = result.assets[0];
+    const mimeType = asset.mimeType ?? 'text/plain';
+    const size = asset.size ?? 0;
+    const validation = validateAttachment({ kind: 'text', size, mimeType }, attachments);
+    if (!validation.ok) {
+      showToast(validation.message);
+      return;
+    }
+
+    try {
+      const uri = await copyToAttachments(asset.uri, asset.name ?? 'file.txt');
+      const attachment: Attachment = {
+        id: makeId('a'),
+        kind: 'text',
+        uri,
+        name: asset.name ?? 'file.txt',
+        mimeType,
+        size,
+      };
+      setAttachments((current) => [...current, attachment]);
+    } catch {
+      showToast('Could not add the file.');
+    }
   };
 
   const handleRerun = async (assistantMessage: Message) => {
@@ -447,6 +567,9 @@ export default function ChatScreen() {
             onStop={handleStop}
             streaming={sending}
             placeholder="Write anything…"
+            onAttach={handleAttach}
+            attachments={attachments}
+            onRemoveAttachment={handleRemoveAttachment}
           />
         </View>
 
