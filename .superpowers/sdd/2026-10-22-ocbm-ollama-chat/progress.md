@@ -11,4 +11,6 @@ Pre-flight: `expo-file-system` 58 new API ships alongside legacy. Ruling: use `e
 - Task 1: complete (scaffold + tooling; `src/app` template, jest alias mapper via POSIX path helper). Commit 9f3a38a.
 - Task 2: complete (types + validation + format; 13 tests passing; tsc clean). Commit below.
 - Task 2 → Task 3: `Message`, `OllamaMessage`, `OllamaModel`, `PullProgress` consumed by client tests/impl. Interfaces match plan.
-- Task 3: in progress.
+- Task 3: complete (ndjson, context, Ollama client; 20 tests passing; tsc clean). Commit 31c0e6d.
+- Task 3 → Task 6/8/11: client constructor injects fetch; `chat` streams NDJSON; `pullModel` progress; `listModels` maps capabilities. Interfaces match.
+- Task 4: in progress.
