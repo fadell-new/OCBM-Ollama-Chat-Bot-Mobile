@@ -1,10 +1,10 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-23 22:44
+Last Updated: 2026-10-23 23:01
 
 ## 🎯 Current Objective
 
-รักษาเวอร์ชัน 1.1.0 ให้เสถียร และทดสอบการใช้งานจริงบนมือถือ (Ollama + on-device models)
+ทดสอบเวอร์ชัน 1.2.0 บนมือถือ (10 โมเดล on-device + เลือกแหล่ง AI ได้)
 
 ## ✅ Completed
 
@@ -26,22 +26,36 @@ Last Updated: 2026-10-23 22:44
   - migrate จาก store โมเดลเดียวเดิมอัตโนมัติ
 - [x] Build APK v1.1.0 (versionCode 2) สำเร็จ (2026-10-23)
   - APK: https://expo.dev/artifacts/eas/l7QAOI7nvKmHKg9JriQh2eul1I9OI2BG1JYfdyEJPOE.apk
+- [x] ขยาย on-device catalog เป็น 10 โมเดล ≤2B + ตัวเลือกแหล่ง AI (2026-10-23)
+  - เพิ่ม Qwen3 0.6B, Gemma 3 1B, Typhoon2 1B (ไทย), Qwen3 1.7B, SmolLM2 1.7B, DeepSeek R1 1.5B
+  - เพิ่ม `aiSource: 'auto' | 'local' | 'ollama'` ให้เลือกใช้โมเดลเครื่องหรือคอมได้ตลอด
+  - กรองโมเดล Ollama ที่ไม่รองรับ chat (capabilities ไม่มี `completion`) ออกจากรายการ
+  - เตือนเมื่อเลือกโมเดลที่คุยไม่ได้ และ auto-fallback ไปตัวที่ใช้ได้
+  - เวอร์ชัน 1.2.0 (versionCode 3) กำลัง build
 
 ## 🚧 In Progress
 
-- [ ] ทดสอบบนมือถือจริง: Ollama connection, ดาวน์โหลดโมเดล, offline chat
-- [ ] เก็บ feedback เรื่องคุณภาพภาษาไทย/ความเร็วของแต่ละโมเดล
+- [ ] ทดสอบ v1.2.0 บนมือถือ: สลับ Auto / On-device / PC (Ollama), ดาวน์โหลดโมเดลใหม่, offline chat
+- [ ] เก็บ feedback คุณภาพภาษาไทย/ความเร็วของแต่ละโมเดล (Typhoon2 1B vs Qwen 2.5 1.5B)
 
 ## ⏳ Pending / Todo
 
-- [ ] กรองโมเดลที่ไม่รองรับ chat ออกจาก Model Management (เช่น `capabilities: ["decision"]`) และแสดงข้อความอธิบาย
 - [ ] พิจารณา streaming แบบ abort กลางทางสำหรับ local inference (ปัจจุบัน abort ได้หลังจบ)
 - [ ] พิจารณา resume download เมื่อเน็ตหลุด
 - [ ] พิจารณาเพิ่มตัวเลือกโมเดลในอนาคต (ยังต้อง ≤ 2B)
 - [ ] ตรวจสอบว่าเครื่อง 32-bit จะติดตั้ง APK ไม่ได้ (ข้อจำกัดที่ตั้งใจ)
+- [ ] iOS/iPad — **ตัดออกตามคำขอผู้ใช้** (ไม่มีแผนทำตอนนี้)
 
 ## 📝 Notes & Context
 
+- **AI Source** — `settings.aiSource`: `auto` (local ถ้ามี ไม่งั้นใช้ Ollama), `local`, `ollama`
+  - เลือกได้ใน Settings → Model Management แม้ติดตั้งโมเดล on-device แล้ว
+- **Catalog 10 โมเดล ≤2B** — ลำดับใน `LOCAL_MODELS` สำคัญ: ตัวสุดท้ายของแต่ละ tier คือตัวที่ถูกแนะนำ
+  - tier 1 (3.5GB): Qwen3 0.6B, Qwen 2.5 0.5B
+  - tier 2 (5GB): Gemma 3 1B, Llama 3.2 1B, Typhoon2 1B (ไทย)
+  - tier 3 (7GB): Qwen3 1.7B, SmolLM2 1.7B, DeepSeek R1 1.5B, Qwen 2.5 1.5B
+  - tier 4 (10GB): Gemma 2 2B
+- **Thinking models** — Qwen3 / DeepSeek R1 ส่ง `enable_thinking: false` ใน `generateLocal` เพื่อลด reasoning ที่ไม่จำเป็น
 - **ห้ามเลือกโมเดลที่ไม่รองรับ chat** — Ollama 0.40.9 คืน `capabilities` ใน `/api/tags`
   - `tev1:0.8b` = `decision` → เรียก `/api/chat` ได้ 400 `"does not support chat"`
   - ใช้ได้: `qwen2.5:3b` (`completion,tools`), `qwen3:1.7b` (`completion,tools,thinking`)
