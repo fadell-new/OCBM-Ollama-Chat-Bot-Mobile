@@ -1,12 +1,12 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-24 16:04
+Last Updated: 2026-10-24 17:18
 
 ## 🎯 Current Objective
 
-ทดสอบเวอร์ชัน 1.3.1 บนมือถือ — แก้ปัญหา chat template ของ Gemma 3 1B
-- [x] Build commit 5055049 (v1.3.0, versionCode 4) สำเร็จใน 14 นาที
-  - APK: https://expo.dev/artifacts/eas/IrnMiAVEw0_jTkt_tJ7v5bTSKi5jRwW_oFWLCr5az9M.apk
+ทดสอบเวอร์ชัน 1.4.0 บนมือถือ (overflow text fix + keyboard + UX polish)
+- [x] Build commit e839c17 (v1.4.0, versionCode 6) สำเร็จใน 14.4 นาที
+  - APK: https://expo.dev/artifacts/eas/jQxAR1sT-U6aM4KnKtjlpGWJgLr5Xu4sCvRCcO5OleE.apk
 
 ## ✅ Completed
 
