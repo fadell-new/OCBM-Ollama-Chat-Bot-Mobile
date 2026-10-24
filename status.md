@@ -50,6 +50,8 @@ Last Updated: 2026-10-24 16:04
 - [ ] ทดสอบ v1.2.0 บนมือถือ: สลับ Auto / On-device / PC (Ollama), ดาวน์โหลดโมเดลใหม่, offline chat
 - [ ] เก็บ feedback คุณภาพภาษาไทย/ความเร็วของแต่ละโมเดล (Typhoon2 1B vs Qwen 2.5 1.5B)
 
+  - APK v1.3.1: https://expo.dev/artifacts/eas/LmRJsrFtD4mj7TG57HvXpcMl_jhg1daKhsweWReZs-4.apk
+
 ## ⏳ Pending / Todo
 
 - [ ] พิจารณา streaming แบบ abort กลางทางสำหรับ local inference (ปัจจุบัน abort ได้หลังจบ)
