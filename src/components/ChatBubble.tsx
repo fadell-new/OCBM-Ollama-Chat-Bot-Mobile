@@ -84,6 +84,8 @@ export function ChatBubble({
         fontFamily: fonts.body,
         fontSize: typeScale.body,
         lineHeight: 24,
+        flexShrink: 1,
+        textBreakStrategy: 'balanced' as any,
       },
       paragraph: {
         marginTop: 0,
@@ -206,11 +208,18 @@ export function ChatBubble({
 
         {hasContent ? (
           isUser ? (
-            <Text style={[styles.userText, { color: theme.onAccent }]}>
+            <Text
+              style={[styles.userText, { color: theme.onAccent, flexShrink: 1 }]}
+              textBreakStrategy="balanced"
+            >
               {message.content}
             </Text>
           ) : (
-            <Markdown style={markdownStyles}>{message.content}</Markdown>
+            <Markdown
+              style={[markdownStyles, { maxWidth: '100%' }]}
+            >
+              {message.content}
+            </Markdown>
           )
         ) : null}
 
@@ -308,6 +317,8 @@ const styles = StyleSheet.create({
   },
   bubble: {
     maxWidth: '88%',
+    flexShrink: 1,
+    overflow: 'hidden',
     borderRadius: radii.bubble,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
