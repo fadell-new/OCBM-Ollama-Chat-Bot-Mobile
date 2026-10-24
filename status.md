@@ -1,10 +1,11 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-23 23:45
+Last Updated: 2026-10-24 15:11
 
 ## 🎯 Current Objective
 
-ทดสอบเวอร์ชัน 1.2.0 บนมือถือ (10 โมเดล on-device + เลือกแหล่ง AI ได้)
+ทดสอบเวอร์ชัน 1.3.0 บนมือถือ (keyboard fix, stop generate, edit/delete message, header model, profile, context memory)
+- [x] Build commit 5055049 (v1.3.0, versionCode 4) กำลังรันบน EAS
 
 ## ✅ Completed
 
@@ -33,6 +34,15 @@ Last Updated: 2026-10-23 23:45
   - เตือนเมื่อเลือกโมเดลที่คุยไม่ได้ และ auto-fallback ไปตัวที่ใช้ได้
   - Build v1.2.0 สำเร็จใน 12.9 นาที
   - APK: https://expo.dev/artifacts/eas/aTaTJAxvIC63tV-L2OmhVTbFfT2-0A-ozhCStx0jPyk.apk
+- [x] UX/bug fixes kritikal (2026-10-24, commit 5055049)
+  - ลบ `runCompletion` ที่ถูกเรียกซ้ำ → แก้ "ตอบเสร็จแล้วรีใหม่"
+  - Header โชว์โมเดลที่ใช้จริง + ระดับแหล่ง AI
+  - Stop generation สำหรับ on-device (AbortController + setSending)
+  - KeyboardAvoidingView ด้วย `react-native-keyboard-controller` (adjustResize)
+  - Edit/Delete ข้อความผู้ใช้ + Composer banner "Editing"
+  - หน้า Profile (ชื่อ/อีเมล/เบอร์)
+  - on-device ส่ง context history (buildContextMessages, 8 turns / 1600 chars)
+  - เวอร์ชัน 1.3.0 (versionCode 4) กำลัง build
 
 ## 🚧 In Progress
 
@@ -57,6 +67,7 @@ Last Updated: 2026-10-23 23:45
   - tier 3 (7GB): Qwen3 1.7B, SmolLM2 1.7B, DeepSeek R1 1.5B, Qwen 2.5 1.5B
   - tier 4 (10GB): Gemma 2 2B
 - **Thinking models** — Qwen3 / DeepSeek R1 ส่ง `enable_thinking: false` ใน `generateLocal` เพื่อลด reasoning ที่ไม่จำเป็น
+- **Keyboard** — `react-native-keyboard-controller` 1.22.7 (Expo bundled) + `KeyboardProvider` + adjustResize - **Stop local** — ส่ง `AbortSignal` ให้ `generateLocal` → เรียก `ctx.stopCompletion()` ทันทีเมื่อ aborted
 - **ห้ามเลือกโมเดลที่ไม่รองรับ chat** — Ollama 0.40.9 คืน `capabilities` ใน `/api/tags`
   - `tev1:0.8b` = `decision` → เรียก `/api/chat` ได้ 400 `"does not support chat"`
   - ใช้ได้: `qwen2.5:3b` (`completion,tools`), `qwen3:1.7b` (`completion,tools,thinking`)
