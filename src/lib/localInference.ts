@@ -121,6 +121,18 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
     throw new Error('Nothing to generate.');
   }
 
+  let accumulated = '';
+
+  const onTokenCallback = (data: { token?: string }) => {
+    if (data.token) {
+      accumulated += data.token;
+      options.onToken(data.token);
+    }
+  };
+
+  let result: Awaited<ReturnType<typeof ctx.completion>> | undefined;
+  let usedFlattenedPrompt = false;
+
   let aborted = false;
   const onAbort = () => {
     aborted = true;
@@ -128,10 +140,8 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
   };
   options.signal?.addEventListener('abort', onAbort, { once: true });
 
-  let accumulated = '';
-
   try {
-    const result = await ctx.completion(
+    result = await ctx.completion(
       {
         messages: completionMessages,
         n_predict: 512,
@@ -139,20 +149,64 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
         stop: entry.model.stopTokens,
         ...(entry.model.thinking ? { enable_thinking: false } : {}),
       },
-      (data) => {
-        if (data.token) {
-          accumulated += data.token;
-          options.onToken(data.token);
-        }
-      }
+      onTokenCallback
     );
+  } catch (firstError) {
+    const message =
+      firstError instanceof Error ? firstError.message.toLowerCase() : String(firstError).toLowerCase();
 
-    if (aborted || options.signal?.aborted) {
-      throw new Error('Aborted');
+    if (
+      /parser|template|format/i.test(message) ||
+      /does not support chat/i.test(message)
+    ) {
+      // Fallback: bypass the model's chat template (which failed to render)
+      // by flattening the conversation into a plain prompt. Less aligned to the
+      // model's training format, but never crashes.
+      usedFlattenedPrompt = true;
+      const flatPrompt =
+        completionMessages.map((message, index) => {
+          const role =
+            message.role === 'assistant'
+              ? 'Assistant'
+              : message.role === 'system'
+                ? 'System'
+                : 'User';
+          return `${role}: ${message.content}`;
+        })
+          .join('\n') + '\nAssistant:';
+
+      try {
+        result = await ctx.completion(
+          {
+            prompt: flatPrompt,
+            jinja: false,
+            n_predict: 512,
+            temperature: 0.7,
+            stop: entry.model.stopTokens,
+          },
+          onTokenCallback
+        );
+      } catch (secondError) {
+        throw secondError;
+      }
+    } else {
+      throw firstError;
     }
-
-    return result?.text ?? accumulated;
-  } finally {
-    options.signal?.removeEventListener('abort', onAbort);
   }
+
+  options.signal?.removeEventListener('abort', onAbort);
+
+  if (aborted || options.signal?.aborted) {
+    throw new Error('Aborted');
+  }
+
+  if (usedFlattenedPrompt) {
+    useLocalModelStore
+      .getState()
+      .setLastError(
+        'Chat template unsupported; using basic prompt mode. Reply quality may drop.'
+      );
+  }
+
+  return (result?.text ?? accumulated).trim() || accumulated;
 }
