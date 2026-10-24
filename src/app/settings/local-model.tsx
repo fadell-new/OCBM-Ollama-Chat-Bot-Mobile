@@ -202,7 +202,10 @@ export default function LocalModelSettingsScreen() {
         return (
           <AppCard key={model.id}>
             <View style={styles.titleRow}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>
+              <Text
+                style={[styles.cardTitle, styles.modelTitle, { color: theme.text }]}
+                numberOfLines={2}
+              >
                 {model.name} · {model.params}
               </Text>
               {isActive ? (
@@ -322,6 +325,9 @@ const styles = StyleSheet.create({
     fontSize: typeScale.body,
     marginTop: spacing.xs,
   },
+  modelTitle: {
+    flex: 1,
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -329,6 +335,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   badge: {
+    flexShrink: 0,
     fontFamily: fonts.medium,
     fontSize: 10,
     letterSpacing: 0.6,

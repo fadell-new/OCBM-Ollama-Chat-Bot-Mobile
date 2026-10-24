@@ -11,14 +11,13 @@ import {
 import {
   Alert,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 import { OllamaClient, OllamaError } from '@/api/ollama';
 import { ChatBubble } from '@/components/ChatBubble';
@@ -28,9 +27,11 @@ import { IconButton } from '@/components/IconButton';
 import { Screen } from '@/components/Screen';
 import { Toast } from '@/components/Toast';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { composeRequest, type ComposedRequest } from '@/lib/chatSend';
+import { buildSystemPrompt, composeRequest, type ComposedRequest } from '@/lib/chatSend';
+import { buildContextMessages } from '@/lib/context';
 import { makeId } from '@/lib/id';
 import { generateLocal } from '@/lib/localInference';
+import { getModelById } from '@/lib/modelCatalog';
 import { reconcileInstalledModels } from '@/lib/modelDownload';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -56,6 +57,7 @@ export default function ChatScreen() {
   const createChat = useChatsStore((state) => state.createChat);
   const appendMessage = useChatsStore((state) => state.appendMessage);
   const updateMessage = useChatsStore((state) => state.updateMessage);
+  const removeMessagesFrom = useChatsStore((state) => state.removeMessagesFrom);
 
   const settings = useSettingsStore((state) => state.settings);
   const status = useConnectionStore((state) => state.status);
@@ -65,11 +67,13 @@ export default function ChatScreen() {
   const localModelReady = useLocalModelStore((state) =>
     Boolean(state.activeModelId && state.installed[state.activeModelId])
   );
+  const activeLocalId = useLocalModelStore((state) => state.activeModelId);
 
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 
   const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const controllerRef = useRef<AbortController | null>(null);
@@ -95,6 +99,7 @@ export default function ChatScreen() {
 
   useEffect(() => {
     setInput('');
+    setEditingMessage(null);
   }, [activeChat?.id]);
 
   useEffect(() => {
@@ -125,6 +130,22 @@ export default function ChatScreen() {
   }, [messages]);
 
   const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
+  const lastUserMessageId = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index].role === 'user') return messages[index].id;
+    }
+    return null;
+  }, [messages]);
+
+  const activeLocalModel = getModelById(activeLocalId);
+  const usingLocal =
+    settings.aiSource === 'local' || (settings.aiSource === 'auto' && localModelReady);
+  const headerModelName = usingLocal
+    ? (activeLocalModel?.name ?? 'On-device model')
+    : settings.defaultModel || 'No model selected';
+
+  const localMode = usingLocal;
 
   const runCompletion = useCallback(
     async (
@@ -209,12 +230,7 @@ export default function ChatScreen() {
     const hasAttachments = attachments.length > 0;
     if ((!text && !hasAttachments) || sendingRef.current) return;
 
-    const useLocal =
-      settings.aiSource === 'local'
-        ? localModelReady
-        : settings.aiSource === 'auto'
-          ? localModelReady
-          : false;
+    const useLocal = localMode;
 
     if (settings.aiSource === 'local' && !localModelReady) {
       showToast('Download and select an on-device model in Settings.');
@@ -282,6 +298,7 @@ export default function ChatScreen() {
       imageAttachments.length > 0 ? await toOllamaImages(imageAttachments) : undefined;
 
     const pendingAttachments = attachments;
+    const editing = editingMessage;
     setAttachments([]);
     setInput('');
 
@@ -300,7 +317,19 @@ export default function ChatScreen() {
       images,
     };
 
-    await appendMessage(chat.id, userMessage);
+    if (editing) {
+      await updateMessage(chat.id, editing.id, {
+        content,
+        attachments: pendingAttachments.length > 0 ? pendingAttachments : editing.attachments,
+        images: images ?? editing.images,
+        status: 'done',
+        error: undefined,
+      });
+      await removeMessagesFrom(chat.id, editing.id, { inclusive: false });
+      setEditingMessage(null);
+    } else {
+      await appendMessage(chat.id, userMessage);
+    }
 
     const withUser = useChatsStore.getState().activeChat;
     if (!withUser) return;
@@ -315,30 +344,77 @@ export default function ChatScreen() {
     });
 
     if (useLocal) {
+      const controller = new AbortController();
+      controllerRef.current = controller;
+      sendingRef.current = true;
+      setSending(true);
+      let accumulated = '';
+
       try {
+        const localMessages = buildContextMessages(
+          withUser.messages,
+          buildSystemPrompt(settings),
+          { maxMessages: 8, maxChars: 1600 }
+        ).map((message) => ({
+          role: message.role as 'system' | 'user' | 'assistant',
+          content: message.content,
+        }));
+
         await generateLocal({
-          prompt: content,
+          messages: localMessages,
+          signal: controller.signal,
           onToken: (token) => {
-            const current = useChatsStore.getState().activeChat;
-            if (!current) return;
-            const msg = current.messages.find((m) => m.id === assistantId);
-            if (!msg) return;
-            void updateMessage(chat.id, assistantId, { content: (msg.content ?? '') + token });
+            accumulated += token;
+            void updateMessage(
+              chat.id,
+              assistantId,
+              { content: accumulated, status: 'streaming' },
+              { persist: false }
+            );
           },
         });
-        await updateMessage(chat.id, assistantId, { status: 'done' });
+        await updateMessage(
+          chat.id,
+          assistantId,
+          { status: 'done' },
+          { persist: true }
+        );
       } catch (error) {
-        await updateMessage(chat.id, assistantId, {
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Generation failed.',
-        });
+        const aborted =
+          controller.signal.aborted ||
+          (error instanceof Error && error.message === 'Aborted');
+
+        if (aborted) {
+          await updateMessage(
+            chat.id,
+            assistantId,
+            {
+              status: 'done',
+              content: accumulated.trim() ? accumulated : 'Stopped.',
+            },
+            { persist: true }
+          );
+        } else {
+          await updateMessage(
+            chat.id,
+            assistantId,
+            {
+              status: 'error',
+              error: error instanceof Error ? error.message : 'Generation failed.',
+            },
+            { persist: true }
+          );
+        }
+      } finally {
+        controllerRef.current = null;
+        sendingRef.current = false;
+        setSending(false);
       }
       return;
     }
 
     const request = composeRequest(withUser, settings);
     const controller = new AbortController();
-    await runCompletion(chat.id, assistantId, request, controller);
     await runCompletion(chat.id, assistantId, request, controller);
   };
 
@@ -427,14 +503,21 @@ export default function ChatScreen() {
   const handleRerun = async (assistantMessage: Message) => {
     if (sendingRef.current) return;
 
-    if (!settings.baseUrl) {
-      showToast('Add your Ollama address in Settings.');
+    if (localMode && !localModelReady) {
+      showToast('Download and select an on-device model in Settings.');
       return;
     }
 
-    if (!settings.defaultModel) {
-      showToast('Choose a model in Settings.');
-      return;
+    if (!localMode) {
+      if (!settings.baseUrl) {
+        showToast('Add your Ollama address in Settings.');
+        return;
+      }
+
+      if (!settings.defaultModel) {
+        showToast('Choose a model in Settings.');
+        return;
+      }
     }
 
     const chat = useChatsStore.getState().activeChat;
@@ -446,7 +529,6 @@ export default function ChatScreen() {
     if (index < 1) return;
 
     const history = chat.messages.slice(0, index);
-    const request = composeRequest({ ...chat, messages: history }, settings);
 
     await updateMessage(chat.id, assistantMessage.id, {
       content: '',
@@ -454,8 +536,118 @@ export default function ChatScreen() {
       error: undefined,
     });
 
+    if (localMode) {
+      const controller = new AbortController();
+      controllerRef.current = controller;
+      sendingRef.current = true;
+      setSending(true);
+      let accumulated = '';
+
+      try {
+        const localMessages = buildContextMessages(
+          history,
+          buildSystemPrompt(settings),
+          { maxMessages: 8, maxChars: 1600 }
+        ).map((message) => ({
+          role: message.role as 'system' | 'user' | 'assistant',
+          content: message.content,
+        }));
+
+        await generateLocal({
+          messages: localMessages,
+          signal: controller.signal,
+          onToken: (token) => {
+            accumulated += token;
+            void updateMessage(
+              chat.id,
+              assistantMessage.id,
+              { content: accumulated, status: 'streaming' },
+              { persist: false }
+            );
+          },
+        });
+        await updateMessage(
+          chat.id,
+          assistantMessage.id,
+          { status: 'done' },
+          { persist: true }
+        );
+      } catch (error) {
+        const aborted =
+          controller.signal.aborted ||
+          (error instanceof Error && error.message === 'Aborted');
+
+        if (aborted) {
+          await updateMessage(
+            chat.id,
+            assistantMessage.id,
+            {
+              status: 'done',
+              content: accumulated.trim() ? accumulated : 'Stopped.',
+            },
+            { persist: true }
+          );
+        } else {
+          await updateMessage(
+            chat.id,
+            assistantMessage.id,
+            {
+              status: 'error',
+              error: error instanceof Error ? error.message : 'Generation failed.',
+            },
+            { persist: true }
+          );
+        }
+      } finally {
+        controllerRef.current = null;
+        sendingRef.current = false;
+        setSending(false);
+      }
+      return;
+    }
+
+    const request = composeRequest({ ...chat, messages: history }, settings);
     const controller = new AbortController();
     await runCompletion(chat.id, assistantMessage.id, request, controller);
+  };
+
+  const handleEditMessage = (message: Message) => {
+    if (sendingRef.current) return;
+    setEditingMessage(message);
+    setInput(message.content);
+    inputRef.current?.focus();
+  };
+
+  const cancelEditing = () => {
+    setEditingMessage(null);
+    setInput('');
+  };
+
+  const handleDeleteMessage = (message: Message) => {
+    if (sendingRef.current) return;
+
+    Alert.alert(
+      'Delete message',
+      'This removes your message and every reply after it.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              const chat = useChatsStore.getState().activeChat;
+              if (!chat) return;
+              if (editingMessage?.id === message.id) {
+                setEditingMessage(null);
+                setInput('');
+              }
+              await removeMessagesFrom(chat.id, message.id, { inclusive: true });
+            })();
+          },
+        },
+      ]
+    );
   };
 
   const handleStop = () => {
@@ -508,7 +700,8 @@ export default function ChatScreen() {
     <Screen padded={false}>
       <KeyboardAvoidingView
         style={styles.root}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <IconButton
@@ -517,12 +710,29 @@ export default function ChatScreen() {
             accessibilityLabel="Open menu"
           />
 
-          <View style={styles.headerCenter}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Choose AI model"
+            onPress={() => router.push('/settings/models')}
+            style={styles.headerCenter}
+          >
             <Text style={[styles.model, { color: theme.text }]} numberOfLines={1}>
-              {settings.defaultModel || 'No model selected'}
+              {headerModelName}
             </Text>
-            <ConnectionBadge status={status} label={badgeLabel} onPress={openSettings} />
-          </View>
+            <View style={styles.headerMeta}>
+              <Text
+                style={[
+                  styles.sourcePill,
+                  { backgroundColor: theme.control, color: theme.textMuted },
+                ]}
+              >
+                {usingLocal ? 'ON-DEVICE' : 'PC'}
+              </Text>
+              {usingLocal ? null : (
+                <ConnectionBadge status={status} label={badgeLabel} onPress={openSettings} />
+              )}
+            </View>
+          </Pressable>
 
           <IconButton
             name="create-outline"
@@ -589,6 +799,15 @@ export default function ChatScreen() {
               <ChatBubble
                 message={item}
                 showActions={item.id === lastAssistantId && item.status === 'done'}
+                showUserActions={
+                  item.role === 'user' && item.id === lastUserMessageId && !sending
+                }
+                onEdit={
+                  item.role === 'user' ? () => handleEditMessage(item) : undefined
+                }
+                onDelete={
+                  item.role === 'user' ? () => handleDeleteMessage(item) : undefined
+                }
                 onRetry={
                   item.status === 'error' ? () => void handleRerun(item) : undefined
                 }
@@ -637,6 +856,8 @@ export default function ChatScreen() {
             onAttach={handleAttach}
             attachments={attachments}
             onRemoveAttachment={handleRemoveAttachment}
+            editing={Boolean(editingMessage)}
+            onCancelEdit={cancelEditing}
           />
         </View>
 
@@ -664,6 +885,7 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     gap: spacing.xs,
   },
@@ -671,6 +893,21 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: typeScale.label,
     maxWidth: '100%',
+    textAlign: 'center',
+  },
+  headerMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  sourcePill: {
+    fontFamily: fonts.medium,
+    fontSize: 9,
+    letterSpacing: 0.5,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 1,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
   empty: {
     flex: 1,

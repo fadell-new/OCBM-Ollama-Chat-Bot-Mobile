@@ -31,7 +31,7 @@ const SOURCE_OPTIONS: { value: AiSource; label: string; description: string }[] 
   },
   {
     value: 'ollama',
-    label: 'PC (Ollama)',
+    label: 'PC',
     description: 'Always use the Ollama server running on your computer.',
   },
 ];
@@ -168,6 +168,7 @@ export default function ModelManagementScreen() {
                     styles.sourceLabel,
                     { color: active ? theme.onAccent : theme.text },
                   ]}
+                  numberOfLines={1}
                 >
                   {option.label}
                 </Text>
@@ -204,7 +205,10 @@ export default function ModelManagementScreen() {
             return (
               <View key={model.id} style={[styles.localRow, { borderColor: theme.border }]}>
                 <View style={styles.localInfo}>
-                  <Text style={[styles.localName, { color: theme.text }]}>
+                  <Text
+                    style={[styles.localName, { color: theme.text }]}
+                    numberOfLines={1}
+                  >
                     {model.name} · {model.params}
                   </Text>
                   <Text style={[styles.localMeta, { color: theme.textMuted }]}>
@@ -365,7 +369,7 @@ const styles = StyleSheet.create({
   },
   sourceLabel: {
     fontFamily: fonts.medium,
-    fontSize: typeScale.label,
+    fontSize: typeScale.caption,
   },
   localRow: {
     flexDirection: 'row',
@@ -378,6 +382,7 @@ const styles = StyleSheet.create({
   },
   localInfo: {
     flex: 1,
+    minWidth: 0,
     gap: 2,
   },
   localName: {

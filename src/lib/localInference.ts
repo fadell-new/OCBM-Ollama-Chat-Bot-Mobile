@@ -89,7 +89,8 @@ export async function unloadLocalModel(): Promise<void> {
 }
 
 export type LocalGenerateOptions = {
-  prompt: string;
+  messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  prompt?: string;
   onToken: (token: string) => void;
   signal?: AbortSignal;
 };
@@ -109,30 +110,49 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
     throw new Error('Aborted');
   }
 
-  let accumulated = '';
-  const result = await ctx.completion(
-    {
-      messages: [{ role: 'user', content: options.prompt }],
-      n_predict: 512,
-      temperature: 0.7,
-      stop: entry.model.stopTokens,
-      ...(entry.model.thinking ? { enable_thinking: false } : {}),
-    },
-    (data) => {
-      if (data.token) {
-        accumulated += data.token;
-        options.onToken(data.token);
-      }
-    }
-  );
+  const completionMessages =
+    options.messages && options.messages.length > 0
+      ? options.messages
+      : options.prompt
+        ? [{ role: 'user' as const, content: options.prompt }]
+        : [];
 
-  if (options.signal?.aborted) {
-    try {
-      await ctx.stopCompletion();
-    } catch {
-      // ignore
-    }
+  if (completionMessages.length === 0) {
+    throw new Error('Nothing to generate.');
   }
 
-  return result?.text ?? accumulated;
+  let aborted = false;
+  const onAbort = () => {
+    aborted = true;
+    void ctx.stopCompletion().catch(() => undefined);
+  };
+  options.signal?.addEventListener('abort', onAbort, { once: true });
+
+  let accumulated = '';
+
+  try {
+    const result = await ctx.completion(
+      {
+        messages: completionMessages,
+        n_predict: 512,
+        temperature: 0.7,
+        stop: entry.model.stopTokens,
+        ...(entry.model.thinking ? { enable_thinking: false } : {}),
+      },
+      (data) => {
+        if (data.token) {
+          accumulated += data.token;
+          options.onToken(data.token);
+        }
+      }
+    );
+
+    if (aborted || options.signal?.aborted) {
+      throw new Error('Aborted');
+    }
+
+    return result?.text ?? accumulated;
+  } finally {
+    options.signal?.removeEventListener('abort', onAbort);
+  }
 }

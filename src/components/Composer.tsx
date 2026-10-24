@@ -3,6 +3,7 @@ import { forwardRef, useState, type ComponentRef } from 'react';
 import {
   Pressable,
   StyleSheet,
+  Text,
   TextInput,
   View,
   type KeyboardTypeOptions,
@@ -26,6 +27,8 @@ export type ComposerProps = {
   attachments?: Attachment[];
   onRemoveAttachment?: (id: string) => void;
   keyboardType?: KeyboardTypeOptions;
+  editing?: boolean;
+  onCancelEdit?: () => void;
 };
 
 export const Composer = forwardRef<ComponentRef<typeof TextInput>, ComposerProps>(
@@ -42,6 +45,8 @@ export const Composer = forwardRef<ComponentRef<typeof TextInput>, ComposerProps
       attachments = [],
       onRemoveAttachment,
       keyboardType,
+      editing = false,
+      onCancelEdit,
     },
     ref
   ) {
@@ -52,6 +57,32 @@ export const Composer = forwardRef<ComponentRef<typeof TextInput>, ComposerProps
 
     return (
       <View style={[styles.root, { borderTopColor: theme.border }]}>
+        {editing ? (
+          <View
+            style={[
+              styles.editingBar,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+            ]}
+          >
+            <Ionicons name="create-outline" size={15} color={theme.textMuted} />
+            <Text style={[styles.editingText, { color: theme.textMuted }]}>
+              Editing message
+            </Text>
+            {onCancelEdit ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cancel editing"
+                hitSlop={8}
+                onPress={onCancelEdit}
+              >
+                <Text style={[styles.editingCancel, { color: theme.accentStrong }]}>
+                  Cancel
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+
         {attachments.length > 0 ? (
           <View style={styles.attachments}>
             {attachments.map((attachment) => (
@@ -154,6 +185,24 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: spacing.sm,
+  },
+  editingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radii.bubble,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  editingText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: typeScale.caption,
+  },
+  editingCancel: {
+    fontFamily: fonts.medium,
+    fontSize: typeScale.caption,
   },
   attachments: {
     flexDirection: 'row',

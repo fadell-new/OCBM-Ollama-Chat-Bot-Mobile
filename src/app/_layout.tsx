@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -41,17 +42,19 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <ThemeProvider
-          mode={themeMode}
-          onModeChange={(mode) => {
-            void updateSettings({ theme: mode });
-          }}
-        >
-          <StatusBar style="auto" />
-          <AppShell />
-        </ThemeProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <ThemeProvider
+            mode={themeMode}
+            onModeChange={(mode) => {
+              void updateSettings({ theme: mode });
+            }}
+          >
+            <StatusBar style="auto" />
+            <AppShell />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

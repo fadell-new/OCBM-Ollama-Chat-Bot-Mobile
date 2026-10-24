@@ -1,5 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Screen } from '@/components/Screen';
@@ -43,20 +44,31 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profile}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Edit profile"
+          onPress={() => router.push('/settings/profile')}
+          style={({ pressed }) => [styles.profile, pressed && styles.profilePressed]}
+        >
           <Avatar name={settings.profile.name} size={64} />
           <View style={styles.profileText}>
-            <Text style={[styles.name, { color: theme.text }]}>
+            <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
               {settings.profile.name}
             </Text>
-            <Text style={[styles.email, { color: theme.textMuted }]}>
+            <Text style={[styles.email, { color: theme.textMuted }]} numberOfLines={1}>
               {settings.profile.email || 'Local profile'}
             </Text>
           </View>
-        </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
+        </Pressable>
 
         <SectionHeader title="Account Settings" />
         <View>
+          <SettingsRow
+            label="Profile"
+            value={settings.profile.name}
+            onPress={() => router.push('/settings/profile')}
+          />
           <SettingsRow
             label="Email"
             value={settings.profile.email || 'Not set'}
@@ -154,8 +166,12 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     paddingTop: spacing.lg,
   },
+  profilePressed: {
+    opacity: 0.7,
+  },
   profileText: {
     flex: 1,
+    minWidth: 0,
     gap: spacing.xs,
   },
   name: {

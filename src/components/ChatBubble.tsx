@@ -23,6 +23,9 @@ export type ChatBubbleProps = {
   onRegenerate?: () => void;
   onCopied?: () => void;
   showActions?: boolean;
+  showUserActions?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
 function StreamingDots() {
@@ -64,6 +67,9 @@ export function ChatBubble({
   onRegenerate,
   onCopied,
   showActions = false,
+  showUserActions = false,
+  onEdit,
+  onDelete,
 }: ChatBubbleProps) {
   const { theme } = useAppTheme();
   const isUser = message.role === 'user';
@@ -171,9 +177,8 @@ export function ChatBubble({
   };
 
   const showFooter =
-    !isUser &&
     !isStreaming &&
-    (isError || showActions);
+    (isError || showActions || showUserActions);
 
   return (
     <View style={[styles.row, isUser ? styles.rowUser : styles.rowAssistant]}>
@@ -260,6 +265,30 @@ export function ChatBubble({
               </Text>
             </Pressable>
           ) : null}
+
+          {showUserActions && onEdit ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Edit message"
+              onPress={onEdit}
+              style={styles.footerButton}
+            >
+              <Ionicons name="create-outline" size={14} color={theme.textMuted} />
+              <Text style={[styles.footerLabel, { color: theme.textMuted }]}>Edit</Text>
+            </Pressable>
+          ) : null}
+
+          {showUserActions && onDelete ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Delete message"
+              onPress={onDelete}
+              style={styles.footerButton}
+            >
+              <Ionicons name="trash-outline" size={14} color={theme.danger} />
+              <Text style={[styles.footerLabel, { color: theme.danger }]}>Delete</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -326,6 +355,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: spacing.md,
     paddingHorizontal: spacing.xs,

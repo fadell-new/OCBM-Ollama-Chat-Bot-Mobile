@@ -80,6 +80,11 @@ type ChatsState = {
     patch: Partial<Message>,
     options?: UpdateMessageOptions
   ) => Promise<void>;
+  removeMessagesFrom: (
+    chatId: string,
+    messageId: string,
+    options?: { inclusive?: boolean }
+  ) => Promise<void>;
   persistChat: (chatId: string) => Promise<void>;
   clearAllChats: () => Promise<void>;
 };
@@ -217,6 +222,27 @@ export const useChatsStore = create<ChatsState>((set, get) => ({
     if (options.persist) {
       await get().persistChat(chatId);
     }
+  },
+
+  removeMessagesFrom: async (chatId, messageId, options = {}) => {
+    const active = get().activeChat;
+    if (!active || active.id !== chatId) return;
+
+    const index = active.messages.findIndex((message) => message.id === messageId);
+    if (index < 0) return;
+
+    const cut = options.inclusive === false ? index + 1 : index;
+    const messages = active.messages.slice(0, cut);
+    if (messages.length === active.messages.length) return;
+
+    const next: Chat = { ...active, messages, updatedAt: Date.now() };
+    const summaries = upsertSummary(get().index, next);
+    set({ activeChat: next, index: summaries });
+
+    await Promise.all([
+      storage.set(STORAGE_KEYS.chat(next.id), next),
+      storage.set(STORAGE_KEYS.chatsIndex, summaries),
+    ]);
   },
 
   persistChat: async (chatId) => {
