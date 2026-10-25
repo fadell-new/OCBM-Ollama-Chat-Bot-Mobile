@@ -1,12 +1,15 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-24 17:18
+Last Updated: 2026-10-25 11:35
 
 ## 🎯 Current Objective
 
-ทดสอบเวอร์ชัน 1.4.0 บนมือถือ (overflow text fix + keyboard + UX polish)
-- [x] Build commit e839c17 (v1.4.0, versionCode 6) สำเร็จใน 14.4 นาที
-  - APK: https://expo.dev/artifacts/eas/jQxAR1sT-U6aM4KnKtjlpGWJgLr5Xu4sCvRCcO5OleE.apk
+แก้ dark mode: ข้อความ assistant ใน Markdown เป็นสีดำบน bubble เข้ม (v1.4.2)
+- Root cause: `ChatBubble` ส่ง `style` เป็น array ให้ `react-native-markdown-display`
+  → library อ่าน `Object.keys(style)` ได้ `"0"`, `"1"` แทน `body` → `body.color` หาย → ข้อความ fallback เป็นสีดำ
+- Fix: ส่ง plain object + ย้าย `maxWidth: '100%'` เข้า `body`
+- Regression test: `__tests__/chatBubble.test.tsx` (84 tests ผ่าน)
+- [ ] Build v1.4.2 (versionCode 8)
 
 ## ✅ Completed
 
@@ -35,6 +38,10 @@ Last Updated: 2026-10-24 17:18
   - เตือนเมื่อเลือกโมเดลที่คุยไม่ได้ และ auto-fallback ไปตัวที่ใช้ได้
   - Build v1.2.0 สำเร็จใน 12.9 นาที
   - APK: https://expo.dev/artifacts/eas/aTaTJAxvIC63tV-L2OmhVTbFfT2-0A-ozhCStx0jPyk.apk
+- [x] แก้ dark mode ข้อความ Markdown มองไม่เห็น (2026-10-25)
+  - สาเหตุ: ส่ง `style` เป็น array ให้ `react-native-markdown-display` → `body.color` ถูกทิ้ง
+  - แก้: `style={markdownStyles}` + `maxWidth: '100%'` ใน `body`; revert Plan A token lift ที่แก้ผิดจุด
+  - เพิ่ม regression test `__tests__/chatBubble.test.tsx`
 - [x] UX/bug fixes kritikal (2026-10-24, commit 5055049)
   - ลบ `runCompletion` ที่ถูกเรียกซ้ำ → แก้ "ตอบเสร็จแล้วรีใหม่"
   - Header โชว์โมเดลที่ใช้จริง + ระดับแหล่ง AI
@@ -71,6 +78,7 @@ Last Updated: 2026-10-24 17:18
   - tier 4 (10GB): Gemma 2 2B
 - **Thinking models** — Qwen3 / DeepSeek R1 ส่ง `enable_thinking: false` ใน `generateLocal` เพื่อลด reasoning ที่ไม่จำเป็น
 - **Keyboard** — `react-native-keyboard-controller` 1.22.7 (Expo bundled) + `KeyboardProvider` + adjustResize - **Stop local** — ส่ง `AbortSignal` ให้ `generateLocal` → เรียก `ctx.stopCompletion()` ทันทีเมื่อ aborted
+- **react-native-markdown-display** — ห้ามส่ง `style` เป็น array; ต้องเป็น object เท่านั้น ไม่งั้น `body.color`/theme ทั้งหมดจะถูก ignore (ข้อความดำใน dark mode)
 - **ห้ามเลือกโมเดลที่ไม่รองรับ chat** — Ollama 0.40.9 คืน `capabilities` ใน `/api/tags`
   - `tev1:0.8b` = `decision` → เรียก `/api/chat` ได้ 400 `"does not support chat"`
   - ใช้ได้: `qwen2.5:3b` (`completion,tools`), `qwen3:1.7b` (`completion,tools,thinking`)

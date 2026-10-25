@@ -85,6 +85,7 @@ export function ChatBubble({
         fontSize: typeScale.body,
         lineHeight: 24,
         flexShrink: 1,
+        maxWidth: '100%',
         textBreakStrategy: 'balanced' as any,
       },
       paragraph: {
@@ -215,11 +216,7 @@ export function ChatBubble({
               {message.content}
             </Text>
           ) : (
-            <Markdown
-              style={[markdownStyles, { maxWidth: '100%' }]}
-            >
-              {message.content}
-            </Markdown>
+            <Markdown style={markdownStyles}>{message.content}</Markdown>
           )
         ) : null}
 
