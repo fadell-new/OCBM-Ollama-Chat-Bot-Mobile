@@ -17,7 +17,7 @@ const chat = {
 
 const FIXED_NOW = new Date('2026-10-25T12:00:00');
 const DATE_LINE =
-  "Current date and time (the user's device): Sunday, October 25, 2026 at 12:00 PM (local ISO date: 2026-10-25). If the user asks about today's date, the day of the week, or the current time, answer directly using this value.";
+  "Current date and time (the user's device): Sunday, October 25, 2026 at 12:00 PM (local ISO date: 2026-10-25). If the user asks about today's date, the day of the week, or the current time, answer directly using this value. Otherwise do not mention dates, weekdays, or times.";
 
 describe('buildSystemPrompt', () => {
   test('joins trimmed prompt, personal context, and the current date/time hint', () => {

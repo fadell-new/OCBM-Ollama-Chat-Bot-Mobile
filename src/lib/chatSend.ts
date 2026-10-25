@@ -61,7 +61,7 @@ export function buildSystemPrompt(input: BuildSystemPromptInput): string {
       ? 'configured in OCBM Settings'
       : "the user's device";
 
-  const dateTimeHint = `Current date and time (${source}): ${localDateTime} (local ISO date: ${localDate}). If the user asks about today's date, the day of the week, or the current time, answer directly using this value.`;
+  const dateTimeHint = `Current date and time (${source}): ${localDateTime} (local ISO date: ${localDate}). If the user asks about today's date, the day of the week, or the current time, answer directly using this value. Otherwise do not mention dates, weekdays, or times.`;
 
   return [input.systemPrompt, input.personalContext, dateTimeHint]
     .map((value) => value.trim())

@@ -144,9 +144,9 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
     result = await ctx.completion(
       {
         messages: completionMessages,
-        n_predict: 512,
-        temperature: 0.7,
-        stop: entry.model.stopTokens,
+        n_predict: 256,
+        temperature: 0.65,
+        stop: entry.model.stopTokens.concat(['\nUser:', '\nAssistant:', '\n\nUser:', '\n\nAssistant:']),
         ...(entry.model.thinking ? { enable_thinking: false } : {}),
       },
       onTokenCallback
@@ -180,9 +180,9 @@ export async function generateLocal(options: LocalGenerateOptions): Promise<stri
           {
             prompt: flatPrompt,
             jinja: false,
-            n_predict: 512,
-            temperature: 0.7,
-            stop: entry.model.stopTokens,
+            n_predict: 256,
+            temperature: 0.65,
+            stop: entry.model.stopTokens.concat(['\nUser:', '\nAssistant:', '\n\nUser:', '\n\nAssistant:']),
           },
           onTokenCallback
         );

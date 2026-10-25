@@ -16,6 +16,7 @@ import { fonts, radii, spacing, type as typeScale } from '@/theme/typography';
 import type { Message } from '@/types';
 
 import { AttachmentChip } from './AttachmentChip';
+import { GeneratedFiles } from './GeneratedFiles';
 
 export type ChatBubbleProps = {
   message: Message;
@@ -221,6 +222,10 @@ export function ChatBubble({
         ) : null}
 
         {isStreaming ? <StreamingDots /> : null}
+
+        {!isStreaming && hasContent && !isUser ? (
+          <GeneratedFiles content={message.content} onCopied={onCopied} />
+        ) : null}
 
         {isError ? (
           <View style={styles.errorBox}>

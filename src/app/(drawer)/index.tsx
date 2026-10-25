@@ -364,6 +364,7 @@ export default function ChatScreen() {
       sendingRef.current = true;
       setSending(true);
       let accumulated = '';
+      let pendingChars = 0;
 
       try {
         const systemPrompt = [
@@ -387,14 +388,26 @@ export default function ChatScreen() {
           signal: controller.signal,
           onToken: (token) => {
             accumulated += token;
-            void updateMessage(
-              chat.id,
-              assistantId,
-              { content: accumulated, status: 'streaming' },
-              { persist: false }
-            );
+            pendingChars += token.length;
+            if (pendingChars >= 12) {
+              void updateMessage(
+                chat.id,
+                assistantId,
+                { content: accumulated, status: 'streaming' },
+                { persist: false }
+              );
+              pendingChars = 0;
+            }
           },
         });
+        if (pendingChars > 0) {
+          await updateMessage(
+            chat.id,
+            assistantId,
+            { content: accumulated, status: 'streaming' },
+            { persist: false }
+          );
+        }
         await updateMessage(
           chat.id,
           assistantId,
@@ -582,6 +595,7 @@ export default function ChatScreen() {
       sendingRef.current = true;
       setSending(true);
       let accumulated = '';
+      let pendingChars = 0;
 
       try {
         const localMessages = buildContextMessages(
@@ -601,22 +615,34 @@ export default function ChatScreen() {
         await generateLocal({
           messages: localMessages,
           signal: controller.signal,
-          onToken: (token) => {
-            accumulated += token;
-            void updateMessage(
-              chat.id,
-              assistantMessage.id,
-              { content: accumulated, status: 'streaming' },
-              { persist: false }
-            );
-          },
-        });
-        await updateMessage(
-          chat.id,
-          assistantMessage.id,
-          { status: 'done' },
-          { persist: true }
-        );
+           onToken: (token) => {
+             accumulated += token;
+             pendingChars += token.length;
+             if (pendingChars >= 12) {
+               void updateMessage(
+                 chat.id,
+                 assistantMessage.id,
+                 { content: accumulated, status: 'streaming' },
+                 { persist: false }
+               );
+               pendingChars = 0;
+             }
+           },
+         });
+         if (pendingChars > 0) {
+           await updateMessage(
+             chat.id,
+             assistantMessage.id,
+             { content: accumulated, status: 'streaming' },
+             { persist: false }
+           );
+         }
+         await updateMessage(
+           chat.id,
+           assistantMessage.id,
+           { status: 'done' },
+           { persist: true }
+         );
       } catch (error) {
         const aborted =
           controller.signal.aborted ||
