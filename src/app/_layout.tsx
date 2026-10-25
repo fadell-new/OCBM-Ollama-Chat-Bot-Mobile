@@ -1,14 +1,16 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { Alert } from 'react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useChatsStore } from '@/store/chatsStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { checkForUpdate, restartToUpdate } from '@/lib/updates';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { fonts, type as typeScale } from '@/theme/typography';
 
@@ -34,11 +36,33 @@ export default function RootLayout() {
   const hydrateChats = useChatsStore((state) => state.hydrate);
   const themeMode = useSettingsStore((state) => state.settings.theme);
   const updateSettings = useSettingsStore((state) => state.update);
+  const settingsHydrated = useSettingsStore((state) => state.hydrated);
+  const chatsHydrated = useChatsStore((state) => state.hydrated);
 
   useEffect(() => {
     void hydrateSettings();
     void hydrateChats();
   }, [hydrateSettings, hydrateChats]);
+
+  const hasCheckedUpdatesRef = useRef(false);
+  useEffect(() => {
+    if (!settingsHydrated || !chatsHydrated || hasCheckedUpdatesRef.current) return;
+    hasCheckedUpdatesRef.current = true;
+
+    void (async () => {
+      const result = await checkForUpdate();
+      if (result.status !== 'downloaded') return;
+
+      Alert.alert(
+        'Update available',
+        result.message,
+        [
+          { text: 'Later', style: 'cancel' },
+          { text: 'Restart now', onPress: () => void restartToUpdate() },
+        ]
+      );
+    })();
+  }, [settingsHydrated, chatsHydrated]);
 
   return (
     <GestureHandlerRootView style={styles.root}>
