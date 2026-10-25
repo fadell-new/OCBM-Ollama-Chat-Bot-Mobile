@@ -8,7 +8,9 @@
 
 > **เวอร์ชันล่าสุด: 1.4.2 (versionCode 8)**
 >
-> **[⬇ ดาวน์โหลด APK สำหรับ Android](https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk)**
+> **[⬇ ดาวน์โหลด APK สำหรับ Android](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.4.2/OCBM-1.4.2.apk)**
+>
+> [ดู Release v1.4.2](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/tag/v1.4.2) · [EAS mirror](https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk)
 
 OCBM ย่อมาจาก **Ollama Chat Bot Mobile** เป็นแอปแชทที่ออกแบบมาให้ทำงานร่วมกับ AI ของคุณเอง ไม่มีบัญชี ไม่มีคลาวด์ และไม่มีโฆษณา คุณสามารถใช้ Ollama บนคอมผ่าน Wi-Fi หรือดาวน์โหลดโมเดลขนาดเล็ก (ไม่เกิน 2B พารามิเตอร์) มาเก็บไว้ในมือถือเพื่อแชทแบบออฟไลน์ได้
 
@@ -84,8 +86,9 @@ OCBM เป็นแอปแชท AI ที่ทำหน้าที่เ�
 
 ### ขั้นตอนติดตั้ง
 
-1. เปิดลิงก์นี้บนมือถือ: **[ดาวน์โหลด OCBM v1.4.2](https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk)**
-2. รอไฟล์ `*.apk` ดาวน์โหลดเสร็จ (ขนาดประมาณ 100 MB)
+1. เปิดลิงก์นี้บนมือถือ: **[ดาวน์โหลด OCBM v1.4.2](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.4.2/OCBM-1.4.2.apk)**
+   - ถ้าลิงก์ GitHub ใช้งานไม่ได้ ให้ใช้ [EAS mirror](https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk)
+2. รอไฟล์ `OCBM-1.4.2.apk` ดาวน์โหลดเสร็จ (ขนาดประมาณ 66 MB)
 3. เปิดไฟล์ APK ที่ดาวน์โหลดมา
 4. หาก Android ถามว่าไม่อนุญาตให้ติดตั้ง ให้ไปที่ **Settings → Allow from this source** หรือ **Install unknown apps** แล้วเปิดสิทธิ์ให้แอปที่ใช้เปิดไฟล์ (Chrome/Files)
 5. หากมีหน้าต่าง **Play Protect** เตือนว่าไม่รู้จักแอป ให้เลือก **More details → Install anyway** (นี่เป็น internal build ที่ไม่ได้เผยแพร่ผ่าน Play Store)
@@ -446,7 +449,7 @@ Settings
 | คีย์บอร์ดบังช่องพิมพ์ | เวอร์ชันเก่า | อัปเดตเป็น 1.4.2 ซึ่งใช้ `react-native-keyboard-controller` + `adjustResize` |
 | ข้อความใน dark mode เป็นสีดำ | บั๊ก Markdown style ในเวอร์ชันก่อน 1.4.2 | อัปเดตเป็น 1.4.2 |
 | เชื่อมต่อได้วันนี้ แต่พรุ่งนี้ใช้ไม่ได้ | IP ของคอมเปลี่ยน (DHCP) | ใช้ **Find Ollama on this network** หรือตั้ง IP คงที่ในเราเตอร์ |
-| ลิงก์ APK ใช้ไม่ได้ | artifact ของ EAS หมดอายุ | build ใหม่ตามหัวข้อ [สำหรับนักพัฒนา](#สำหรับนักพัฒนา) |
+| ลิงก์ APK ใช้ไม่ได้ | ลิงก์ EAS mirror หมดอายุ | ใช้ลิงก์จาก [GitHub Release](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases) หรือ build ใหม่ตามหัวข้อ [สำหรับนักพัฒนา](#สำหรับนักพัฒนา) |
 
 ### เคล็ดลับเมื่อเชื่อมต่อไม่ได้
 
