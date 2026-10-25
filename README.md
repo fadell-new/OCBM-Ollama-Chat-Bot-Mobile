@@ -3,14 +3,14 @@
 **แอปแชท AI ส่วนตัวสำหรับ Android** ที่คุณเลือกได้ว่าจะคุยกับโมเดลบนมือถือ หรือต่อกับ Ollama ที่รันอยู่บนคอมพิวเตอร์ของคุณ
 
 ![Android](https://img.shields.io/badge/Android-arm64--v8a-3DDC84?logo=android&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.5.0-blue)
+![Version](https://img.shields.io/badge/version-1.5.1-blue)
 ![Expo](https://img.shields.io/badge/Expo-SDK%2058-000020?logo=expo&logoColor=white)
 
-> **เวอร์ชันล่าสุด: 1.5.0 (versionCode 9)**
+> **เวอร์ชันล่าสุด: 1.5.1 (versionCode 10)**
 >
-> **[⬇ ดาวน์โหลด APK สำหรับ Android](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.5.0/OCBM-1.5.0.apk)**
+> **[⬇ ดาวน์โหลด APK สำหรับ Android](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.5.1/OCBM-1.5.1.apk)**
 >
-> [ดู Release v1.5.0](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/tag/v1.5.0) · [EAS mirror](https://expo.dev/artifacts/eas/EZlVjlBXDN3JKfUjPSoUUSO-v2fKA3NI4Ta7X2sqGbw.apk)
+> [ดู Release v1.5.1](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/tag/v1.5.1) · [EAS mirror](https://expo.dev/artifacts/eas/bcKjhWFPo73MZ4j5dnaUJuYRXDKt3ZhJEI5IwVkdRSM.apk)
 
 OCBM ย่อมาจาก **Ollama Chat Bot Mobile** เป็นแอปแชทที่ออกแบบมาให้ทำงานร่วมกับ AI ของคุณเอง ไม่มีบัญชี ไม่มีคลาวด์ และไม่มีโฆษณา คุณสามารถใช้ Ollama บนคอมผ่าน Wi-Fi หรือดาวน์โหลดโมเดลขนาดเล็ก (ไม่เกิน 2B พารามิเตอร์) มาเก็บไว้ในมือถือเพื่อแชทแบบออฟไลน์ได้
 
@@ -86,9 +86,9 @@ OCBM เป็นแอปแชท AI ที่ทำหน้าที่เ�
 
 ### ขั้นตอนติดตั้ง
 
-1. เปิดลิงก์นี้บนมือถือ: **[ดาวน์โหลด OCBM v1.5.0](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.5.0/OCBM-1.5.0.apk)**
-   - ถ้าลิงก์ GitHub ใช้งานไม่ได้ ให้ใช้ [EAS mirror](https://expo.dev/artifacts/eas/EZlVjlBXDN3JKfUjPSoUUSO-v2fKA3NI4Ta7X2sqGbw.apk)
-2. รอไฟล์ `OCBM-1.5.0.apk` ดาวน์โหลดเสร็จ (ขนาดประมาณ 66 MB)
+1. เปิดลิงก์นี้บนมือถือ: **[ดาวน์โหลด OCBM v1.5.0](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.5.0/OCBM-1.5.1.apk)**
+   - ถ้าลิงก์ GitHub ใช้งานไม่ได้ ให้ใช้ [EAS mirror](https://expo.dev/artifacts/eas/bcKjhWFPo73MZ4j5dnaUJuYRXDKt3ZhJEI5IwVkdRSM.apk)
+2. รอไฟล์ `OCBM-1.5.1.apk` ดาวน์โหลดเสร็จ (ขนาดประมาณ 66 MB)
 3. เปิดไฟล์ APK ที่ดาวน์โหลดมา
 4. หาก Android ถามว่าไม่อนุญาตให้ติดตั้ง ให้ไปที่ **Settings → Allow from this source** หรือ **Install unknown apps** แล้วเปิดสิทธิ์ให้แอปที่ใช้เปิดไฟล์ (Chrome/Files)
 5. หากมีหน้าต่าง **Play Protect** เตือนว่าไม่รู้จักแอป ให้เลือก **More details → Install anyway** (นี่เป็น internal build ที่ไม่ได้เผยแพร่ผ่าน Play Store)
@@ -170,7 +170,7 @@ New-NetFirewallRule -DisplayName "Ollama 11434" -Direction Inbound -Protocol TCP
 
 #### ทางลัดสำหรับ Windows: ใช้ไฟล์ `.bat`
 
-ถ้าไม่อยากพิมพ์คำสั่งเอง ให้ดาวน์โหลด **[OCBM-Ollama-Setup.bat](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.5.0/OCBM-Ollama-Setup.bat)** แล้วดับเบิลคลิกไฟล์นั้น ([ดูโค้ด](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/blob/main/OCBM-Ollama-Setup.bat))
+ถ้าไม่อยากพิมพ์คำสั่งเอง ให้ดาวน์โหลด **[OCBM-Ollama-Setup.bat](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.5.1/OCBM-Ollama-Setup.bat)** แล้วดับเบิลคลิกไฟล์นั้น ([ดูโค้ด](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/blob/main/OCBM-Ollama-Setup.bat))
 
 ไฟล์นี้จะทำให้อัตโนมัติ:
 
@@ -621,6 +621,7 @@ docs/           architecture, design, roadmap, changelog
 
 ## เวอร์ชันและเอกสาร
 
+- **1.5.1** — Per-block file artifacts (copy/save/view/ZIP), debug timestamp hallucination, reduced on-device runaway generation, file viewer
 - **1.5.0** — Date & Time settings, free DuckDuckGo web search, OTA auto-update checks, App Updates screen, Windows Ollama setup helper
 - **1.4.2** — แก้สีข้อความ Markdown ใน dark mode, เพิ่ม regression test, build APK สำเร็จ
 - **1.3.x** — stop generation, edit/delete/regenerate, keyboard avoidance, หน้าโปรไฟล์
