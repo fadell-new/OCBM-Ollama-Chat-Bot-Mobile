@@ -19,6 +19,9 @@
 - README ภาษาไทยและ link to release
 - Windows helper `OCBM-Ollama-Setup.bat`
 - โมเดล on-device 10 ตัวใน catalog (≤ 2B)
+- Date & Time settings (custom override + timezone)
+- Free web search ด้วย DuckDuckGo (toggle +  injecting results into prompt)
+- Auto-update via Expo OTA + settings screen
 - Chat: streaming, stop, regenerate, edit, delete, copy
 - Personal Intelligence + Customize AI + profile
 - Tests: 84/84 ครั้งล่าสุดที่รัน
@@ -37,8 +40,11 @@
 
 ## 🎯 Current User Intent For This Branch
 
-> ผู้ใช้ขอให้ "ทำต่อ" โดยให้สร้าง branch ไว้ทำเพิ่มในอนาคตและเขียนไฟล์ handoff นี้
-> งานเพิ่มถัดไปที่ผู้ใช้ยังไม่ระบุรายละเอียดอย่างชัดเจน
+> เฟส 1, 2, 3 ใน future-work ทำเสร็จแล้ว:
+> - Date & Time settings (อยู่ใน Settings)
+> - Web Search (DuckDuckGo HTML POST, ไม่ต้อง key)
+> - Auto Update (Expo OTA + หน้า Settings → App Updates)
+> งานถัดไปคือ test บนเครื่องจริง, build, แล้ว merge/release ลง GitHub ตามคำขอ (เมื่อผู้ใช้สั่งเท่านั้น)
 
 ## 📁 Files Likely To Touch
 
@@ -53,10 +59,11 @@
 
 | # | Goal | Notes |
 |---|------|-------|
-| 1 | [ ] ระบุฟีเจอร์หรือจุดที่ต้องแก้ | ผู้ใช้จะบอกใน session ใหม่ |
-| 2 | [ ] ทำเวรชัน/regression tests | `npm test` + `npx tsc --noEmit` |
-| 3 | [ ] ถ้าแก้ UI/build ให้ตรวจ EAS constraints | `app.json`, `eas.json` |
-| 4 | [ ] อัปเดต `status.md` | ต่อจาก notes ปัจจุบัน |
+| 1 | [x] Date & Time settings | commit 1f0a04e/c54ed70 |
+| 2 | [x] Web Search settings + integration | commit 66f2b4d/6b7cb5f |
+| 3 | [x] Auto-update (Expo OTA + App Updates screen) | commit 7448c8b + คู่ commit |
+| 4 | [ ] Test จริงบนเครื่อง Android | APK/Expo Go (native updater จะไม่ทำงานใน dev) |
+| 5 | [ ] EAS build / publish update / merge-release to GitHub | หลัง user ยืนยัน |
 
 ## 🧠 Prompt To Paste Into The New Session
 
