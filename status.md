@@ -1,6 +1,6 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-25 11:35
+Last Updated: 2026-10-25 11:50
 
 ## 🎯 Current Objective
 
@@ -9,7 +9,8 @@ Last Updated: 2026-10-25 11:35
   → library อ่าน `Object.keys(style)` ได้ `"0"`, `"1"` แทน `body` → `body.color` หาย → ข้อความ fallback เป็นสีดำ
 - Fix: ส่ง plain object + ย้าย `maxWidth: '100%'` เข้า `body`
 - Regression test: `__tests__/chatBubble.test.tsx` (84 tests ผ่าน)
-- [ ] Build v1.4.2 (versionCode 8)
+- [x] Build v1.4.2 (versionCode 8) สำเร็จใน 12.6 นาที
+  - APK: https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk
 
 ## ✅ Completed
 
