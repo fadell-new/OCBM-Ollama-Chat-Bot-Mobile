@@ -19,6 +19,8 @@ export const DEFAULT_SETTINGS: Settings = {
   dateTimeMode: 'device',
   dateTimeOverride: '',
   dateTimeTimeZone: '',
+  webSearchEnabled: false,
+  webSearchMaxResults: 5,
 };
 
 function mergeSettings(raw: Partial<Settings> | null): Settings {

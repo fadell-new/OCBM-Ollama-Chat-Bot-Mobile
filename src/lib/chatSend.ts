@@ -75,9 +75,21 @@ export function buildSystemPrompt(input: BuildSystemPromptInput): string {
  * The system prompt and the personal-context notes are always sent first;
  * conversation history then follows within the context budget.
  */
-export function composeRequest(chat: Chat, settings: Settings): ComposedRequest {
+export type ComposeRequestOptions = {
+  searchContext?: string;
+};
+
+export function composeRequest(
+  chat: Chat,
+  settings: Settings,
+  options: ComposeRequestOptions = {}
+): ComposedRequest {
+  const systemPrompt = [buildSystemPrompt(settings), options.searchContext?.trim()]
+    .filter(Boolean)
+    .join('\n\n');
+
   return {
     model: settings.defaultModel,
-    messages: buildContextMessages(chat.messages, buildSystemPrompt(settings)),
+    messages: buildContextMessages(chat.messages, systemPrompt),
   };
 }

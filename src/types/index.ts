@@ -65,6 +65,8 @@ export type Settings = {
   dateTimeMode: DateTimeMode;
   dateTimeOverride: string;
   dateTimeTimeZone: string;
+  webSearchEnabled: boolean;
+  webSearchMaxResults: number;
 };
 
 export type OllamaModel = {
