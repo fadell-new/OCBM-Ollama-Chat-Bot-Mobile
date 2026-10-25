@@ -1,19 +1,31 @@
 # Project Status: OCBM
 
-Last Updated: 2026-10-25 11:50
+Last Updated: 2026-10-25 12:16
 
 ## 🎯 Current Objective
 
-แก้ dark mode: ข้อความ assistant ใน Markdown เป็นสีดำบน bubble เข้ม (v1.4.2)
-- Root cause: `ChatBubble` ส่ง `style` เป็น array ให้ `react-native-markdown-display`
-  → library อ่าน `Object.keys(style)` ได้ `"0"`, `"1"` แทน `body` → `body.color` หาย → ข้อความ fallback เป็นสีดำ
-- Fix: ส่ง plain object + ย้าย `maxWidth: '100%'` เข้า `body`
-- Regression test: `__tests__/chatBubble.test.tsx` (84 tests ผ่าน)
-- [x] Build v1.4.2 (versionCode 8) สำเร็จใน 12.6 นาที
-  - APK: https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk
+เผยแพร่ OCBM v1.4.2 สู่ GitHub ครบแล้ว — เหลือรับ feedback จากผู้ใช้
+- Repository: https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile
+- Release: https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/tag/v1.4.2
 
 ## ✅ Completed
 
+- [x] เผยแพร่โค้ดขึ้น GitHub `main` + merge remote history (2026-10-25)
+  - push local `master` → remote `main` (095a31e)
+  - merge `origin/main` ด้วย `--allow-unrelated-histories`; resolve README แบบ ours
+- [x] เขียน README ภาษาไทยละเอียด (2026-10-25)
+  - วิธีดาวน์โหลด/ติดตั้ง, ตั้ง Ollama PC, โมเดล on-device, ฟีเจอร์ทั้งหมด, troubleshooting, privacy, dev/build
+  - APK หลักชี้ที่ GitHub Release; EAS artifact เป็น mirror
+- [x] สร้าง GitHub Release `v1.4.2` + อัปโหลด `OCBM-1.4.2.apk` (2026-10-25)
+  - asset: 65,765,437 bytes (arm64-v8a), SHA-256 `1B4498CFD122F5A8C4B8637E872B5B797696C27F3FDD2BC9CBB968F894A20508`
+  - ดาวน์โหลดจาก EAS artifact ของ v1.4.2 ไม่ใช่ `OCBM.apk` เก่าในเครื่อง
+- [x] แก้ dark mode: ข้อความ assistant ใน Markdown เป็นสีดำบน bubble เข้ม (v1.4.2)
+  - Root cause: `ChatBubble` ส่ง `style` เป็น array ให้ `react-native-markdown-display`
+    → library อ่าน `Object.keys(style)` ได้ `"0"`, `"1"` แทน `body` → `body.color` หาย → ข้อความ fallback เป็นสีดำ
+  - Fix: ส่ง plain object + ย้าย `maxWidth: '100%'` เข้า `body`
+  - Regression test: `__tests__/chatBubble.test.tsx` (84 tests ผ่าน)
+- [x] Build v1.4.2 (versionCode 8) สำเร็จใน 12.6 นาที
+  - APK: https://expo.dev/artifacts/eas/Hji8vxXv28cWpY99nfppNfevj_Lmm1S3vrwLF-csCmw.apk
 - [x] เชื่อมต่อ Ollama ผ่าน LAN (2026-10-23)
   - เปิด `OLLAMA_HOST=0.0.0.0:11434` และ `OLLAMA_ORIGINS=*` ระดับ User
   - Windows Firewall มี inbound allow สำหรับ `ollama.exe` (Public profile)
@@ -55,13 +67,13 @@ Last Updated: 2026-10-25 11:50
 
 ## 🚧 In Progress
 
-- [ ] ทดสอบ v1.2.0 บนมือถือ: สลับ Auto / On-device / PC (Ollama), ดาวน์โหลดโมเดลใหม่, offline chat
-- [ ] เก็บ feedback คุณภาพภาษาไทย/ความเร็วของแต่ละโมเดล (Typhoon2 1B vs Qwen 2.5 1.5B)
-
-  - APK v1.3.1: https://expo.dev/artifacts/eas/LmRJsrFtD4mj7TG57HvXpcMl_jhg1daKhsweWReZs-4.apk
+- [ ] รับ feedback ผู้ใช้จาก v1.4.2 (APK บน GitHub Release)
+- [ ] ตรวจ GitHub README/release อีกครั้งหลัง raw cache อัปเดต (API และหน้าเว็บเห็นลิงก์ release แล้ว)
 
 ## ⏳ Pending / Todo
 
+- [ ] ทดสอบสลับ Auto / On-device / PC (Ollama), ดาวน์โหลดโมเดลใหม่, offline chat บน v1.4.2
+- [ ] เก็บ feedback คุณภาพภาษาไทย/ความเร็วของแต่ละโมเดล (Typhoon2 1B vs Qwen 2.5 1.5B)
 - [ ] พิจารณา streaming แบบ abort กลางทางสำหรับ local inference (ปัจจุบัน abort ได้หลังจบ)
 - [ ] พิจารณา resume download เมื่อเน็ตหลุด
 - [ ] พิจารณาเพิ่มตัวเลือกโมเดลในอนาคต (ยังต้อง ≤ 2B)
@@ -94,4 +106,14 @@ Last Updated: 2026-10-25 11:50
   - `src/lib/modelDownload.ts` — download/cancel/delete/reconcile
   - `src/lib/localInference.ts` — llama.rn context + generate
   - `src/app/settings/local-model.tsx` — หน้าจอ On-device AI
-- Tests: `npm test` (15 suites / 83 tests), `npx tsc --noEmit`, `npx expo-doctor` (20/20)
+- Tests: `npm test` (15 suites / 84 tests), `npx tsc --noEmit`, `npx expo-doctor` (20/20)
+- **GitHub** — https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile
+  - local branch `master` push ไป remote `main`; คำสั่ง: `git push origin master:main`
+  - remote `main` ล่าสุด: `095a31e` (README release link)
+  - Release `v1.4.2`: https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/tag/v1.4.2
+  - asset: `OCBM-1.4.2.apk` (65,765,437 bytes)
+- **README** — ภาษาไทย, ครอบคลุมติดตั้ง/ตั้งค่า/ฟีเจอร์/troubleshooting/ข้อจำกัด/developer build
+  - ลิงก์ APK หลัก = GitHub Release; EAS artifact เป็น mirror (อาจหมดอายุ)
+  - อย่าเปลี่ยน `style` ของ `react-native-markdown-display` เป็น array
+- **Reset app** — ล้าง AsyncStorage + settings/chats แต่ **ไม่ลบไฟล์โมเดลหรือไฟล์แนบ**; README ระบุข้อจำกัดนี้แล้ว
+- `OCBM.apk` ที่ root (102 MB, 2026-10-23) เป็นไฟล์เก่าและถูก ignore; ห้ามใช้แทน asset v1.4.2
