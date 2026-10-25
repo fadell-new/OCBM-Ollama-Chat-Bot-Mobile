@@ -33,37 +33,7 @@ export type BuildSystemPromptSettingsInput = Pick<
  * the operating system clock.
  */
 export function buildSystemPrompt(input: BuildSystemPromptInput): string {
-  const mode = input.dateTimeMode ?? 'device';
-  const timeZone = input.dateTimeTimeZone?.trim() || undefined;
-
-  let now: Date;
-  if (mode === 'custom' && input.dateTimeOverride?.trim()) {
-    const parsed = new Date((input.dateTimeOverride ?? '').trim());
-    now = Number.isNaN(parsed.getTime()) ? (input.now ?? new Date()) : parsed;
-  } else {
-    now = input.now ?? new Date();
-  }
-
-  const format = (options: Intl.DateTimeFormatOptions) => {
-    try {
-      return now.toLocaleString('en-US', { ...options, timeZone });
-    } catch {
-      return now.toLocaleString('en-US', options);
-    }
-  };
-
-  const localDateTime = format({ dateStyle: 'full', timeStyle: 'short' });
-  const localDate = format({ year: 'numeric', month: '2-digit', day: '2-digit' })
-    .replace(/(\d+)\/(\d+)\/(\d+)/, (_, month, day, year) => `${year}-${month}-${day}`);
-
-  const source =
-    mode === 'custom'
-      ? 'configured in OCBM Settings'
-      : "the user's device";
-
-  const dateTimeHint = `Current date and time (${source}): ${localDateTime} (local ISO date: ${localDate}). If the user asks about today's date, the day of the week, or the current time, answer directly using this value. Otherwise do not mention dates, weekdays, or times.`;
-
-  return [input.systemPrompt, input.personalContext, dateTimeHint]
+  return [input.systemPrompt, input.personalContext]
     .map((value) => value.trim())
     .filter(Boolean)
     .join('\n\n');
