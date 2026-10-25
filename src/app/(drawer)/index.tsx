@@ -29,6 +29,7 @@ import { Toast } from '@/components/Toast';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { buildSystemPrompt, composeRequest, type ComposedRequest } from '@/lib/chatSend';
 import { buildContextMessages } from '@/lib/context';
+import { getEffectiveDateTimeLabel, isDateTimeQuestion } from '@/lib/dateTimeIntent';
 import { formatSearchContext, searchWeb, shouldSearchWeb } from '@/lib/webSearch';
 import { makeId } from '@/lib/id';
 import { generateLocal } from '@/lib/localInference';
@@ -358,6 +359,20 @@ export default function ChatScreen() {
       status: 'streaming',
     });
 
+    if (isDateTimeQuestion(content)) {
+      const label = getEffectiveDateTimeLabel(settings);
+      const answer = /[ก-๙]/.test(content)
+        ? `วันที่/เวลาปัจจุบัน: ${label}`
+        : `Current date and time: ${label}`;
+      await updateMessage(
+        chat.id,
+        assistantId,
+        { content: answer, status: 'done' },
+        { persist: true }
+      );
+      return;
+    }
+
     if (useLocal) {
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -451,6 +466,16 @@ export default function ChatScreen() {
     const request = composeRequest(withUser, settings, {
       searchContext: searchContext || undefined,
     });
+
+    const selectedOllamaModel = models.find((model) => model.name === settings.defaultModel);
+    if (selectedOllamaModel && !selectedOllamaModel.capabilities.includes('vision')) {
+      request.messages = request.messages.map((message) => ({
+        ...message,
+        images: undefined,
+      }));
+      showToast('This model may not read images; sending text and files only.');
+    }
+
     const controller = new AbortController();
     await runCompletion(chat.id, assistantId, request, controller);
   };
@@ -680,6 +705,14 @@ export default function ChatScreen() {
     const request = composeRequest({ ...chat, messages: history }, settings, {
       searchContext: rerunSearchContext || undefined,
     });
+
+    const selectedOllamaModel = models.find((model) => model.name === settings.defaultModel);
+    if (selectedOllamaModel && !selectedOllamaModel.capabilities.includes('vision')) {
+      request.messages = request.messages.map((message) => ({
+        ...message,
+        images: undefined,
+      }));
+    }
     const controller = new AbortController();
     await runCompletion(chat.id, assistantMessage.id, request, controller);
   };
