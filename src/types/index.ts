@@ -51,6 +51,8 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 
 export type AiSource = 'auto' | 'ollama' | 'local';
 
+export type DateTimeMode = 'device' | 'custom';
+
 export type Settings = {
   baseUrl: string;
   defaultModel: string;
@@ -60,6 +62,9 @@ export type Settings = {
   profile: Profile;
   onboardingComplete: boolean;
   aiSource: AiSource;
+  dateTimeMode: DateTimeMode;
+  dateTimeOverride: string;
+  dateTimeTimeZone: string;
 };
 
 export type OllamaModel = {

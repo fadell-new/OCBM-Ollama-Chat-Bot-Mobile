@@ -1,5 +1,5 @@
 import { buildContextMessages } from '@/lib/context';
-import type { Chat, OllamaMessage, Settings } from '@/types';
+import type { Chat, DateTimeMode, OllamaMessage, Settings } from '@/types';
 
 export type ComposedRequest = {
   model: string;
@@ -8,6 +8,17 @@ export type ComposedRequest = {
 
 export type BuildSystemPromptInput = Pick<Settings, 'systemPrompt' | 'personalContext'> & {
   now?: Date;
+  dateTimeMode?: DateTimeMode;
+  dateTimeOverride?: string;
+  dateTimeTimeZone?: string;
+};
+
+// Keep the Settings-derived type visible for callers that pass a full Settings object.
+export type BuildSystemPromptSettingsInput = Pick<
+  Settings,
+  'systemPrompt' | 'personalContext' | 'dateTimeMode' | 'dateTimeOverride' | 'dateTimeTimeZone'
+> & {
+  now?: Date;
 };
 
 /**
@@ -15,21 +26,42 @@ export type BuildSystemPromptInput = Pick<Settings, 'systemPrompt' | 'personalCo
  * they are sent to Ollama. Keeping this in one place lets the settings screens
  * preview the real payload.
  *
- * A local date/time hint is always included so even smaller on-device models can
+ * A date/time hint is always included so even smaller on-device models can
  * answer questions like "what day is it today?" instead of hallucinating the date.
+ *
+ * Settings may override the device clock (or use a time zone) without changing
+ * the operating system clock.
  */
 export function buildSystemPrompt(input: BuildSystemPromptInput): string {
-  const now = input.now ?? new Date();
+  const mode = input.dateTimeMode ?? 'device';
+  const timeZone = input.dateTimeTimeZone?.trim() || undefined;
 
-  const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-    now.getDate()
-  ).padStart(2, '0')}`;
-  const localDateTime = now.toLocaleString('en-US', {
-    dateStyle: 'full',
-    timeStyle: 'short',
-  });
+  let now: Date;
+  if (mode === 'custom' && input.dateTimeOverride?.trim()) {
+    const parsed = new Date((input.dateTimeOverride ?? '').trim());
+    now = Number.isNaN(parsed.getTime()) ? (input.now ?? new Date()) : parsed;
+  } else {
+    now = input.now ?? new Date();
+  }
 
-  const dateTimeHint = `Current local date and time on the user's device: ${localDateTime} (local ISO date: ${localDate}). If the user asks about today's date, the day of the week, or the current time, answer directly using this value.`;
+  const format = (options: Intl.DateTimeFormatOptions) => {
+    try {
+      return now.toLocaleString('en-US', { ...options, timeZone });
+    } catch {
+      return now.toLocaleString('en-US', options);
+    }
+  };
+
+  const localDateTime = format({ dateStyle: 'full', timeStyle: 'short' });
+  const localDate = format({ year: 'numeric', month: '2-digit', day: '2-digit' })
+    .replace(/(\d+)\/(\d+)\/(\d+)/, (_, month, day, year) => `${year}-${month}-${day}`);
+
+  const source =
+    mode === 'custom'
+      ? 'configured in OCBM Settings'
+      : "the user's device";
+
+  const dateTimeHint = `Current date and time (${source}): ${localDateTime} (local ISO date: ${localDate}). If the user asks about today's date, the day of the week, or the current time, answer directly using this value.`;
 
   return [input.systemPrompt, input.personalContext, dateTimeHint]
     .map((value) => value.trim())

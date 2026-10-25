@@ -16,6 +16,9 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   onboardingComplete: false,
   aiSource: 'auto',
+  dateTimeMode: 'device',
+  dateTimeOverride: '',
+  dateTimeTimeZone: '',
 };
 
 function mergeSettings(raw: Partial<Settings> | null): Settings {

@@ -17,7 +17,7 @@ const chat = {
 
 const FIXED_NOW = new Date('2026-10-25T12:00:00');
 const DATE_LINE =
-  "Current local date and time on the user's device: Sunday, October 25, 2026 at 12:00 PM (local ISO date: 2026-10-25). If the user asks about today's date, the day of the week, or the current time, answer directly using this value.";
+  "Current date and time (the user's device): Sunday, October 25, 2026 at 12:00 PM (local ISO date: 2026-10-25). If the user asks about today's date, the day of the week, or the current time, answer directly using this value.";
 
 describe('buildSystemPrompt', () => {
   test('joins trimmed prompt, personal context, and the current date/time hint', () => {
@@ -56,7 +56,7 @@ describe('composeRequest', () => {
     expect(out.messages[0].content).toContain('SYS');
     expect(out.messages[0].content).toContain('P');
     expect(out.messages[0].content).toContain(
-      "Current local date and time on the user's device"
+      "Current date and time (the user's device)"
     );
     expect(out.messages.at(-1)?.content).toBe('Hi');
   });
@@ -69,7 +69,7 @@ describe('composeRequest', () => {
     } as Settings);
     expect(out.messages[0].role).toBe('system');
     expect(out.messages[0].content).toContain(
-      "Current local date and time on the user's device"
+      "Current date and time (the user's device)"
     );
     expect(out.messages.at(-1)?.content).toBe('Hi');
   });

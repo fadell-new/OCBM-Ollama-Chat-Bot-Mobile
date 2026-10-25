@@ -128,6 +128,11 @@ export default function SettingsScreen() {
         <SectionHeader title="General and UI" />
         <View>
           <SettingsRow
+            label="Date & Time"
+            value={settings.dateTimeMode === 'custom' ? 'Custom' : 'Device time'}
+            onPress={() => router.push('/settings/date-time' as any)}
+          />
+          <SettingsRow
             label="Theme"
             value={themeLabel}
             onPress={() => router.push('/settings/theme')}
