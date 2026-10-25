@@ -468,7 +468,7 @@ export default function ChatScreen() {
     });
 
     const selectedOllamaModel = models.find((model) => model.name === settings.defaultModel);
-    if (selectedOllamaModel && !selectedOllamaModel.capabilities.includes('vision')) {
+    if (!selectedOllamaModel?.capabilities?.includes('vision')) {
       request.messages = request.messages.map((message) => ({
         ...message,
         images: undefined,
@@ -707,7 +707,7 @@ export default function ChatScreen() {
     });
 
     const selectedOllamaModel = models.find((model) => model.name === settings.defaultModel);
-    if (selectedOllamaModel && !selectedOllamaModel.capabilities.includes('vision')) {
+    if (!selectedOllamaModel?.capabilities?.includes('vision')) {
       request.messages = request.messages.map((message) => ({
         ...message,
         images: undefined,
