@@ -3,10 +3,10 @@
 **แอปแชท AI ส่วนตัวสำหรับ Android** ที่คุณเลือกได้ว่าจะคุยกับโมเดลบนมือถือ หรือต่อกับ Ollama ที่รันอยู่บนคอมพิวเตอร์ของคุณ
 
 ![Android](https://img.shields.io/badge/Android-arm64--v8a-3DDC84?logo=android&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.4.2-blue)
+![Version](https://img.shields.io/badge/version-1.5.0-blue)
 ![Expo](https://img.shields.io/badge/Expo-SDK%2058-000020?logo=expo&logoColor=white)
 
-> **เวอร์ชันล่าสุด: 1.4.2 (versionCode 8)**
+> **เวอร์ชันล่าสุดกำลัง build: 1.5.0 (versionCode 9)**
 >
 > **[⬇ ดาวน์โหลด APK สำหรับ Android](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.4.2/OCBM-1.4.2.apk)**
 >
@@ -424,6 +424,12 @@ http://192.168.1.50:11434
 
 ---
 
+### 10. วันเวลา, ค้นหาบนเว็บ และอัปเดตแอป
+
+- **Date & Time** — ใช้เวลาเครื่อง หรือตั้งวัน/เวลาและ timezone อ้างอิงสำหรับ AI โดยไม่เปลี่ยนนาฬิกาเครื่อง
+- **Web Search** - if enabled (default off), app searches DuckDuckGo before answering and adds results to prompt; uses internet even when the model runs on-device
+- **App Updates** — แอปจะเช็คอัปเดตอัตโนมัติตอนเปิด และให้กด Restart ได้; native/runtime changes ยังต้องติดตั้ง build ใหม่
+
 ## แผนที่หน้าตั้งค่า
 
 ```text
@@ -439,6 +445,9 @@ Settings
 │   ├── On-device AI
 │   └── Customize AI
 ├── General and UI
+│   ├── Date & Time
+│   ├── Web Search
+│   ├── App Updates
 │   ├── Theme
 │   └── Chat History Management
 └── About
@@ -612,6 +621,7 @@ docs/           architecture, design, roadmap, changelog
 
 ## เวอร์ชันและเอกสาร
 
+- **1.5.0** — Date & Time settings, free DuckDuckGo web search, OTA auto-update checks, App Updates screen, Windows Ollama setup helper
 - **1.4.2** — แก้สีข้อความ Markdown ใน dark mode, เพิ่ม regression test, build APK สำเร็จ
 - **1.3.x** — stop generation, edit/delete/regenerate, keyboard avoidance, หน้าโปรไฟล์
 - **1.2.0** — โมเดล on-device 10 ตัว, AI Source (Auto/On-device/PC), กรองโมเดลที่แชทไม่ได้
