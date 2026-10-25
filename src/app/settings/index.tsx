@@ -138,6 +138,11 @@ export default function SettingsScreen() {
             onPress={() => router.push('/settings/updates' as any)}
           />
           <SettingsRow
+            label="Web Search"
+            value={settings.webSearchEnabled ? 'Enabled' : 'Disabled'}
+            onPress={() => router.push('/settings/web-search' as any)}
+          />
+          <SettingsRow
             label="Theme"
             value={themeLabel}
             onPress={() => router.push('/settings/theme')}

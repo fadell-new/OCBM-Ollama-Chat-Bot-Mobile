@@ -29,6 +29,7 @@ import { Toast } from '@/components/Toast';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { buildSystemPrompt, composeRequest, type ComposedRequest } from '@/lib/chatSend';
 import { buildContextMessages } from '@/lib/context';
+import { formatSearchContext, searchWeb, shouldSearchWeb } from '@/lib/webSearch';
 import { makeId } from '@/lib/id';
 import { generateLocal } from '@/lib/localInference';
 import { getModelById } from '@/lib/modelCatalog';
@@ -282,6 +283,20 @@ export default function ChatScreen() {
       }
     }
 
+    let searchContext = '';
+    if (
+      settings.webSearchEnabled &&
+      text.trim().length >= 5 &&
+      shouldSearchWeb(text.trim())
+    ) {
+      showToast('Searching the web...');
+      const results = await searchWeb(
+        text.trim(),
+        Math.max(1, Math.min(settings.webSearchMaxResults ?? 5, 8))
+      );
+      if (results?.length) searchContext = formatSearchContext(results);
+    }
+
     let content = text;
     const textAttachments = attachments.filter((attachment) => attachment.kind === 'text');
     for (const attachment of textAttachments) {
@@ -351,9 +366,16 @@ export default function ChatScreen() {
       let accumulated = '';
 
       try {
+        const systemPrompt = [
+          buildSystemPrompt(settings),
+          searchContext ? `Web search results:\n${searchContext}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n\n');
+
         const localMessages = buildContextMessages(
           withUser.messages,
-          buildSystemPrompt(settings),
+          systemPrompt,
           { maxMessages: 8, maxChars: 1600 }
         ).map((message) => ({
           role: message.role as 'system' | 'user' | 'assistant',
@@ -413,7 +435,9 @@ export default function ChatScreen() {
       return;
     }
 
-    const request = composeRequest(withUser, settings);
+    const request = composeRequest(withUser, settings, {
+      searchContext: searchContext || undefined,
+    });
     const controller = new AbortController();
     await runCompletion(chat.id, assistantId, request, controller);
   };
@@ -529,6 +553,22 @@ export default function ChatScreen() {
     if (index < 1) return;
 
     const history = chat.messages.slice(0, index);
+    const rerunQuery =
+      [...history].reverse().find((message) => message.role === 'user')?.content?.trim() ?? '';
+
+    let rerunSearchContext = '';
+    if (
+      settings.webSearchEnabled &&
+      rerunQuery.length >= 5 &&
+      shouldSearchWeb(rerunQuery)
+    ) {
+      showToast('Searching the web...');
+      const results = await searchWeb(
+        rerunQuery,
+        Math.max(1, Math.min(settings.webSearchMaxResults ?? 5, 8))
+      );
+      if (results?.length) rerunSearchContext = formatSearchContext(results);
+    }
 
     await updateMessage(chat.id, assistantMessage.id, {
       content: '',
@@ -546,7 +586,12 @@ export default function ChatScreen() {
       try {
         const localMessages = buildContextMessages(
           history,
-          buildSystemPrompt(settings),
+          [
+            buildSystemPrompt(settings),
+            rerunSearchContext ? `Web search results:\n${rerunSearchContext}` : '',
+          ]
+            .filter(Boolean)
+            .join('\n\n'),
           { maxMessages: 8, maxChars: 1600 }
         ).map((message) => ({
           role: message.role as 'system' | 'user' | 'assistant',
@@ -606,7 +651,9 @@ export default function ChatScreen() {
       return;
     }
 
-    const request = composeRequest({ ...chat, messages: history }, settings);
+    const request = composeRequest({ ...chat, messages: history }, settings, {
+      searchContext: rerunSearchContext || undefined,
+    });
     const controller = new AbortController();
     await runCompletion(chat.id, assistantMessage.id, request, controller);
   };
