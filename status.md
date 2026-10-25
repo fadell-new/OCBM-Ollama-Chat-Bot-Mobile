@@ -29,7 +29,7 @@ Last Updated: 2026-10-25 12:16
 - [x] เชื่อมต่อ Ollama ผ่าน LAN (2026-10-23)
   - เปิด `OLLAMA_HOST=0.0.0.0:11434` และ `OLLAMA_ORIGINS=*` ระดับ User
   - Windows Firewall มี inbound allow สำหรับ `ollama.exe` (Public profile)
-  - ทดสอบจากมือถือผ่าน browser สำเร็จ: `http://192.168.1.154:11434` → "Ollama is running"
+  - ทดสอบจากมือถือผ่าน browser สำเร็จ: `http://192.168.1.50:11434` → "Ollama is running"
 - [x] แก้ APK เดิมเชื่อม Ollama ไม่ได้ (2026-10-23)
   - สาเหตุ: `android.usesCleartextTraffic` ไม่ใช่ field ที่ Expo รองรับ → release APK บล็อก HTTP
   - แก้ด้วย `expo-build-properties` → `android.usesCleartextTraffic: true`
@@ -99,7 +99,7 @@ Last Updated: 2026-10-25 12:16
 - **llama.rn 0.13.0-rc.8** ตั้ง `rnllamaBuildFromSource=true` ใน `node_modules/llama.rn/android/gradle.properties` (ห้ามใช้ prebuilt เพราะ stale)
 - APK เป็น **arm64-v8a เท่านั้น**
 - Build command: `eas build --platform android --profile preview --non-interactive`
-- Ollama PC: `http://192.168.1.154:11434` (IP เป็น DHCP อาจเปลี่ยน)
+- Ollama PC: `http://192.168.1.50:11434` (IP เป็น DHCP อาจเปลี่ยน)
 - ไฟล์สำคัญ:
   - `src/lib/modelCatalog.ts` — catalog + recommendation logic
   - `src/store/localModelStore.ts` — installed/active/downloads + migration v2

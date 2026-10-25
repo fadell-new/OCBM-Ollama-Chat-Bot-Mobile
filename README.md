@@ -207,7 +207,7 @@ sudo ufw allow 11434/tcp
 
 ### 4. หา IP ของคอม
 
-- **Windows:** `ipconfig` → ดู **IPv4 Address** เช่น `192.168.1.154`
+- **Windows:** `ipconfig` → ดู **IPv4 Address** เช่น `192.168.1.50`
 - **macOS:** `ipconfig getifaddr en0`
 - **Linux:** `hostname -I`
 
@@ -226,7 +226,7 @@ http://<IP-ของคอม>:11434
 ตัวอย่าง:
 
 ```text
-http://192.168.1.154:11434
+http://192.168.1.50:11434
 ```
 
 > ใช้ `http://` ไม่ใช่ `https://` และไม่ต้องใส่ `/api` ต่อท้าย
@@ -234,7 +234,7 @@ http://192.168.1.154:11434
 ### 6. เชื่อมต่อในแอป
 
 1. ไปที่ **Settings → Connection Settings**
-2. ใส่ **Base URL** เช่น `http://192.168.1.154:11434`
+2. ใส่ **Base URL** เช่น `http://192.168.1.50:11434`
 3. กด **Test Connection** — จะเห็นสถานะ Online, latency และจำนวนโมเดล
 4. กด **Save**
 5. ไปที่ **Settings → Model Management** เลือก **AI Source = PC** และเลือกโมเดลเริ่มต้น
