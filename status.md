@@ -16,6 +16,10 @@ Last Updated: 2026-10-25 12:16
 - [x] เขียน README ภาษาไทยละเอียด (2026-10-25)
   - วิธีดาวน์โหลด/ติดตั้ง, ตั้ง Ollama PC, โมเดล on-device, ฟีเจอร์ทั้งหมด, troubleshooting, privacy, dev/build
   - APK หลักชี้ที่ GitHub Release; EAS artifact เป็น mirror
+- [x] เพิ่มตัวช่วย Windows `OCBM-Ollama-Setup.bat` (2026-10-25)
+  - ตั้ง `OLLAMA_HOST` / `OLLAMA_ORIGINS`, เปิด firewall 11434, รีสตาร์ท Ollama, แสดง IP/URL และคัดลอก IP
+  - มีโหมด `--dry-run`; รองรับ Windows + elevate Administrator อัตโนมัติ
+  - แนบเป็น asset ใน GitHub Release v1.4.2
 - [x] สร้าง GitHub Release `v1.4.2` + อัปโหลด `OCBM-1.4.2.apk` (2026-10-25)
   - asset: 65,765,437 bytes (arm64-v8a), SHA-256 `1B4498CFD122F5A8C4B8637E872B5B797696C27F3FDD2BC9CBB968F894A20508`
   - ดาวน์โหลดจาก EAS artifact ของ v1.4.2 ไม่ใช่ `OCBM.apk` เก่าในเครื่อง

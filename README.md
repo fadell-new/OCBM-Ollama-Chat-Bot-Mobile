@@ -168,6 +168,21 @@ setx OLLAMA_ORIGINS "*"
 New-NetFirewallRule -DisplayName "Ollama 11434" -Direction Inbound -Protocol TCP -LocalPort 11434 -Action Allow
 ```
 
+#### ทางลัดสำหรับ Windows: ใช้ไฟล์ `.bat`
+
+ถ้าไม่อยากพิมพ์คำสั่งเอง ให้ดาวน์โหลด **[OCBM-Ollama-Setup.bat](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/releases/download/v1.4.2/OCBM-Ollama-Setup.bat)** แล้วดับเบิลคลิกไฟล์นั้น ([ดูโค้ด](https://github.com/fadell-new/OCBM-Ollama-Chat-Bot-Mobile/blob/main/OCBM-Ollama-Setup.bat))
+
+ไฟล์นี้จะทำให้อัตโนมัติ:
+
+- ตั้งค่า `OLLAMA_HOST=0.0.0.0:11434` และ `OLLAMA_ORIGINS=*`
+- เปิดพอร์ต TCP `11434` ใน Windows Firewall
+- รีสตาร์ท Ollama เพื่อให้อ่านค่าใหม่
+- แสดง IP และ URL สำหรับเชื่อมต่อจากมือถือ พร้อมคัดลอก IP ไปยัง clipboard
+
+ต้องกด **Yes** ในหน้าต่างขอสิทธิ์ Administrator (ไฟล์จะขอเอง) และใช้ได้กับ Windows เท่านั้น
+
+> หลังรันเสร็จ เปิดเบราว์เซอร์ในมือถือไปที่ URL ที่แสดง ถ้าเห็น **Ollama is running** แสดงว่าพร้อมใช้งาน
+
 #### macOS
 
 ```bash
